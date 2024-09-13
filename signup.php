@@ -30,6 +30,18 @@
   .form-floating:not(:last-child) {
     margin-bottom: 10px; /* Adjust as needed */
   }
+  #form{
+    border: solid 1px;
+    border-width: 1px;
+    border-radius: 1rem;
+    box-shadow: 0 0 0 10px rgba(0, 0, 0, 0.05); /* Adds a "border-like" shadow */
+    padding: 20px; /* Adds space between border and form fields */
+    box-sizing: border-box; /* Ensures padding doesn't affect the form's size */
+   
+  }
+.form-container {
+    position: relative;
+}
 </style>
     <!-- <style>
       .bd-placeholder-img {
@@ -117,7 +129,8 @@
   <body class="d-flex align-items-center py-4 bg-body-tertiary">
 
 <main class="form-signin w-100 m-auto">
-  <form action="login.php" method="post" enctype="multipart/form-data">
+<div class="form-container">
+  <form id="form" action="login.php" method="post" enctype="multipart/form-data">
     
     <h1 class="h3 mb-3 fw-normal">Sign up</h1>
 
@@ -188,10 +201,11 @@
 
     <!-- button -->
     <div>
-    <button class="btn btn-primary" style="padding-left: 123px; padding-right: 123px; text-align: center;" type="submit" value="submit" name="submit">Submit</button>
+    <button class="btn btn-primary" style="padding-left: 104px; padding-right: 104px; text-align: center;" type="submit" value="submit" name="submit">Submit</button>
     <!-- <button class="btn btn-secondary" style="padding-left: 85px; padding-right: 85px" type="reset" name="reset">Reset</button> -->
     </div>
   </form>
+  </div>
 </main>
     </body>
 </html>
