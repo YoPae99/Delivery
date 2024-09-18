@@ -1,11 +1,9 @@
 <?php
 // Include necessary files
-require_once 'C:/laragon/www/CaseStudy/Classes/Admin.php';
-require_once 'C:/laragon/www/CaseStudy/Classes/User.php';
-
+require_once __DIR__ . '/Classes/User.php';
 
 // Use correct namespaces
-use DELIVERY\Admin\Admin;
+use DELIVERY\User\User;
 
 // Check if the form is submitted
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -23,11 +21,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         exit;
     }
 
-    // Create an Admin instance (assuming you want to use Admin to create users)
-    $admin = new Admin($name, $age, $username, $email, $password);
+    // Hash the password
+    $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 
-    // Use the Admin instance to create the user
-    $admin->CreateUser($name, $age, $username, $email, $password);
+    // Use the User class to create the user
+    User::CreateUser($name, $age, $username, $email, $hashedPassword);
 
     // Redirect or inform the user of successful sign-up
     echo "User created successfully!";

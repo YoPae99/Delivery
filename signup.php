@@ -51,7 +51,7 @@
 
 <main class="form-signin w-100 m-auto">
 <div class="form-container">
-  <form id="form" action="signup.php" method="post" enctype="multipart/form-data">
+  <form id="form" action="process_signup.php" method="post" enctype="multipart/form-data">
     
     <h1 class="h3 mb-3 fw-normal">Sign up</h1>
 

@@ -1,10 +1,9 @@
 <?php
 namespace DELIVERY\User;
-
-require_once __DIR__ . '/../Database/Database.php'; // Updated path to Database.php
+require_once __DIR__ . '/../Database/Database.php'; // Path to Database.php
 use DELIVERY\Database\Database;
 
-abstract class User {
+class User {
     private $ID;
     private $Name;
     private $Age;
@@ -22,35 +21,22 @@ abstract class User {
         $this->Password = $Password;
     }
 
-    public function CreateUser($Name, $Age, $Username, $Email, $Password) {
+    // Method for user login (to be implemented in derived classes)
+    public function Login($Email, $Password) {
+        // Implementation here
+    }
+
+    // Static method to create a user
+    public static function CreateUser($Name, $Age, $Username, $Email, $Password) {
         $conn = new Database();
-        
-        // Check if the username or email already exists
-        $checkQuery = "SELECT COUNT(*) FROM user WHERE Username = :Username OR Email = :Email";
-        $checkStatement = $conn->getStarted()->prepare($checkQuery);
-        $checkStatement->bindParam(":Username", $Username);
-        $checkStatement->bindParam(":Email", $Email);
-        $checkStatement->execute();
-        $count = $checkStatement->fetchColumn();
-        
-        if ($count > 0) {
-            echo "Username or email already exists!";
-            return;
-        }
-    
-        // Hash the password
-        $hashedPassword = password_hash($Password, PASSWORD_DEFAULT);
-    
-        // Proceed with inserting the new user
         $query = "INSERT INTO user(Name, Age, Username, Email, Password) VALUES (:Name, :Age, :Username, :Email, :Password)";
         $statement = $conn->getStarted()->prepare($query);
         $statement->bindParam(":Name", $Name);
         $statement->bindParam(":Age", $Age);
         $statement->bindParam(":Username", $Username);
         $statement->bindParam(":Email", $Email);
-        $statement->bindParam(":Password", $hashedPassword);
+        $statement->bindParam(":Password", $Password);
         $statement->execute();
     }
-
-    abstract public function Login($Email, $Password);
 }
+?>
