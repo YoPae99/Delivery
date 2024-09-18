@@ -5,7 +5,7 @@ require_once __DIR__ . '/../Database/Database.php'; // Correct path to Database.
 use DELIVERY\User\User;
 
 class Admin extends User {
-    public function Login($Email, $Password) {
+    public static function Login($Email, $Password) {
         // Implementation here
     }
 

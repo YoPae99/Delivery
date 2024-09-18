@@ -24,12 +24,22 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Hash the password
     $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 
-    // Use the User class to create the user
-    User::CreateUser($name, $age, $username, $email, $hashedPassword);
+    // Try to create the user and handle duplicate errors
+    try {
+        User::CreateUser($name, $age, $username, $email, $hashedPassword);
 
-    // Redirect or inform the user of successful sign-up
-    echo "User created successfully!";
-    // header("Location: success.php"); // Optionally redirect to a success page
+        // Redirect only if the user is successfully created
+        header("Location: login.php");
+        exit();
+
+    } catch (PDOException $e) {
+        // Check for duplicate entry error
+        if ($e->getCode() == 23000) { 
+            echo "<p style='color: red;'>Error: Username or Email already exists. Please choose another.</p>";
+        } else {
+            echo "<p style='color: red;'>An unexpected error occurred: " . $e->getMessage() . "</p>";
+        }
+    }
 } else {
     echo "Invalid request.";
 }

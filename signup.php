@@ -50,7 +50,6 @@
   <body class="d-flex align-items-center py-4 bg-body-tertiary">
 
 <main class="form-signin w-100 m-auto">
-<div class="form-container">
   <form id="form" action="process_signup.php" method="post" enctype="multipart/form-data">
     
     <h1 class="h3 mb-3 fw-normal">Sign up</h1>
@@ -99,10 +98,11 @@
     </div>
 
     <!-- button -->
-    <div>
+    <form action="login.php">
     <button class="btn btn-primary" style="padding-left: 104px; padding-right: 104px; text-align: center;" type="submit" value="submit" name="submit">Submit</button>
-    <!-- <button class="btn btn-secondary" style="padding-left: 85px; padding-right: 85px" type="reset" name="reset">Reset</button> -->
-    </div>
+
+    </form>
+
   </form>
   </div>
 </main>
