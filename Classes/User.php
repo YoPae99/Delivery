@@ -18,8 +18,9 @@ class User {
     private $Permission;
 
     // Constructor
-    public function __construct($Name, $Age, $Username, $Email, $Password) {
+    public function __construct($Name, $Permission, $Age, $Username, $Email, $Password) {
         $this->Name = $Name;
+        $this->Permission = $Permission;
         $this->Age = $Age;
         $this->Username = $Username;
         $this->Email = $Email;
@@ -27,12 +28,13 @@ class User {
     }
 
     // Static method to create a user
-    public static function CreateUser($Name, $Age, $Username, $Email, $Password) {
+    public static function CreateUser($Name, $Permission, $Age, $Username, $Email, $Password) {
         $conn = new Database();
         try {
-            $query = "INSERT INTO user (Name, Age, Username, Email, Password) VALUES (:Name, :Age, :Username, :Email, :Password)";
+            $query = "INSERT INTO user (Name, Permission, Age, Username, Email, Password) VALUES (:Name, :Permission, :Age, :Username, :Email, :Password)";
             $statement = $conn->getStarted()->prepare($query);
             $statement->bindParam(":Name", $Name);
+            $statement->bindParam(":Permission", $Permission);
             $statement->bindParam(":Age", $Age);
             $statement->bindParam(":Username", $Username);
             $statement->bindParam(":Email", $Email);
@@ -56,9 +58,22 @@ class User {
             $statement->bindParam(':email', $email);
             $statement->execute();
             $user = $statement->fetch(PDO::FETCH_ASSOC);
+            
+            // Debugging: Output the fetched user data
+            echo "<pre>";
+            print_r($user);
+            echo "</pre>";
     
             if ($user && password_verify($password, $user['Password'])) {
-                return $user; // Return user data
+                return [
+                    'ID' => $user['ID'],
+                    'Name' => $user['Name'],
+                    'Permission' => $user['Permission'],
+                    'Age' => $user['Age'],
+                    'Username' => $user['Username'],
+                    'Email' => $user['Email'],
+                    'Password' => $user['Password']
+                ];
             } else {
                 return false; // Invalid credentials
             }
@@ -66,6 +81,8 @@ class User {
             throw new Exception("Database error: " . $e->getMessage());
         }
     }
+    
+    
     
 }
 ?>

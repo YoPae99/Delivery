@@ -52,13 +52,26 @@
 <main class="form-signin w-100 m-auto">
   <form id="form" action="process_signup.php" method="post" enctype="multipart/form-data">
     
-    <h1 class="h3 mb-3 fw-normal">Sign up</h1>
+    <h1 style="text-align: center;" class="h3 mb-3 fw-normal">Sign up</h1>
 
 <!-- Name -->
     <div class="form-floating">
       <input type="text" class="form-control" id="floatingInput" placeholder="Name" name="name" required>
       <label for="floatingInput">Name</label>
     </div>
+
+<!--Select Role to log in  -->
+<!--Select Role to log in  -->
+<div class="form-floating">
+    <select id="floatingInput" class="form-select" name="permission" aria-label="Default select example" required>
+        <option selected>Select role</option>
+        <option value="driver">Driver</option>
+        <option value="client">Client</option>
+    </select>
+</div>
+
+
+    
   
 <!-- Age -->
     <div class="form-floating">
@@ -90,18 +103,17 @@
       <label for="floatingInput">Confirm your password</label>
     </div>
 
-    <div class="form-check text-start my-3">
-      <input class="form-check-input" type="checkbox" value="remember-me" id="flexCheckDefault">
-      <label class="form-check-label" for="flexCheckDefault" requried>
+    <!-- <div class="form-check text-start my-3">
+      <input class="form-check-input" type="checkbox" value="remember-me" id="flexCheckDefault" requried>
+      <label class="form-check-label" for="flexCheckDefault">
          Agree Terms and Conditions
       </label>
-    </div>
+    </div> -->
 
     <!-- button -->
-    <form action="login.php">
-    <button class="btn btn-primary" style="padding-left: 104px; padding-right: 104px; text-align: center;" type="submit" value="submit" name="submit">Submit</button>
-
-    </form>
+    <button class="btn btn-primary w-100 py-2" type="submit">Submit</button>
+    <br><br>
+    <p class="text-body-secondary" style="font-size:15.6px">Already have an account? <a href="login.php">Login now</a>.</p> 
 
   </form>
   </div>

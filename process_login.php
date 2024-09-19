@@ -8,6 +8,7 @@ session_start();
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $email = isset($_POST['email']) ? trim($_POST['email']) : '';
     $password = isset($_POST['password']) ? trim($_POST['password']) : '';
+    $permission = isset($_POST['permission']) ? trim($_POST['permission']) : '';
 
     if (empty($email) || empty($password)) {
         echo "Both fields are required!";
@@ -18,15 +19,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $user = User::Login($email, $password);
 
         if ($user) {
-            // Debugging: Check if user data is received correctly
-            echo "<pre>";
-            print_r($user);
-            echo "</pre>";
-
+            // Store user information in session
             $_SESSION['user'] = $user;
+            // Store user permission level if needed
+            $_SESSION['permission'] = $user['Permission'];
 
             // Redirect to homepage.php
-            header("Location: homepage.php");
+            header("Location: Dashboard/client_dashboard.php");
             exit();
         } else {
             echo "<p style='color: red;'>Invalid email or password!</p>";

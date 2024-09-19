@@ -9,6 +9,7 @@ use DELIVERY\User\User;
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Retrieve form data
     $name = $_POST['name'];
+    $permission = $_POST['permission'];
     $age = $_POST['age'];
     $username = $_POST['username'];
     $email = $_POST['email'];
@@ -26,7 +27,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     // Try to create the user and handle duplicate errors
     try {
-        User::CreateUser($name, $age, $username, $email, $hashedPassword);
+        User::CreateUser($name, $permission, $age, $username, $email, $hashedPassword);
 
         // Redirect only if the user is successfully created
         header("Location: login.php");

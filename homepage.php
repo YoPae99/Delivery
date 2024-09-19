@@ -1,24 +1,32 @@
 <?php
-session_start();
+session_start(); // Always start the session to access session variables
 
-if (!isset($_SESSION['user'])) {
-    header("Location: login.php");
-    exit();
+// Check if 'role' (permission) is set in the session
+if (isset($_SESSION['permission'])) {
+    $userRole = $_SESSION['permission'];
+} else {
+    $userRole = null; // Assign a default value or handle the missing role
 }
-
-$user = $_SESSION['user'];
-echo "Welcome, " . htmlspecialchars($user['Name']) . "!"; // Adjust based on actual user data
-
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Homepage</title>
+    <title>Dashboard</title>
 </head>
 <body>
-    <p>This is DELIVERY HOMEPAGE</p>
+
+<?php if ($user['permission'] == 'admin') {
+    header("Location: admin_homepage.php");
+} elseif ($user['permission'] == 'client') {
+    header("Location: client_homepage.php");
+} elseif ($user['permission'] == 'driver') {
+    header("Location: driver_homepage.php");
+} else {
+    header("Location: homepage.php"); // Default fallback
+}
+die();
+?>
+
 </body>
 </html>
