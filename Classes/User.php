@@ -18,7 +18,7 @@ class User {
     private $Permission;
 
     // Constructor
-    public function __construct($Name, $Permission, $Age, $Username, $Email, $Password) {
+    public function __construct($Name = null, $Permission = null, $Age = null, $Username = null, $Email = null, $Password = null) {
         $this->Name = $Name;
         $this->Permission = $Permission;
         $this->Age = $Age;
@@ -60,9 +60,9 @@ class User {
             $user = $statement->fetch(PDO::FETCH_ASSOC);
             
             // Debugging: Output the fetched user data
-            echo "<pre>";
-            print_r($user);
-            echo "</pre>";
+            // echo "<pre>";
+            // print_r($user);
+            // echo "</pre>";
     
             if ($user && password_verify($password, $user['Password'])) {
                 return [

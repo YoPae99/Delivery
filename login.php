@@ -50,13 +50,13 @@
     </div>
 
    <!--Select Role to log in  -->
-    <select class="form-select" aria-label="Default select example" name="permission">
+    <!-- <select class="form-select" aria-label="Default select example" name="permission">
   <option selected>Select role</option>
   <option value="admin">Admin</option>
   <option value="driver">Driver</option>
   <option value="client">Client</option>
   </select>
-<br>
+<br> -->
     <!-- <div class="form-check text-start my-3">
       <input class="form-check-input" type="checkbox" value="remember-me" id="flexCheckDefault">
       <label class="form-check-label" for="flexCheckDefault">
