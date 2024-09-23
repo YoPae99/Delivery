@@ -5,19 +5,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="../css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <style>
-      .bd-placeholder-img {
-        font-size: 1.125rem;
-        text-anchor: middle;
-        -webkit-user-select: none;
-        -moz-user-select: none;
-        user-select: none;
-      }
-
-      @media (min-width: 768px) {
-        .bd-placeholder-img-lg {
-          font-size: 3.5rem;
+        #status-update-container {
+            margin-left: 0%;
+            width: 65em;
+            background-color: #f8f9fa;
         }
-      }
+
+        .border {
+            border: 1px solid #ced4da;
+        }
+
+        .rounded {
+            border-radius: 0.25rem;
+        }
+
+        .custom-card {
+            margin-top: 20px;
+            height: 300px; /* Fixed height */
+            min-height: 300px; /* Ensure there’s enough space for content */
+            overflow-y: auto; /* Enable vertical scrolling */
+        }
     </style>
     <title>Dashboard</title>
     <link href="../css/sidebar.css" rel="stylesheet">
@@ -26,40 +33,26 @@
 <main>
   <h1 class="visually-hidden">Sidebars examples</h1>
 
-  <div class="d-flex flex-column flex-shrink-0 p-3 text-white bg-dark" style="width: 280px;">
+  <div class="d-flex flex-column flex-shrink-0 p-3 text-white bg-dark" style="width: 200px;">
     <!-- <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none"> -->
-      <svg class="bi me-2" width="40" height="32"><use xlink:href="#bootstrap"/></svg>
+
       <span class="fs-4">RINDRA FAST DELIVERY</span>
     </a>
     <hr>
     <ul class="nav nav-pills flex-column mb-auto">
-      <!-- <li class="nav-item">
-        <a  href="admin_dashboard.php" class="nav-link text-white">
-          <svg style="text-align: center;" class="bi me-2" width="16" height="16"><use xlink:href="#home"/></svg>
-          Home
-        </a>
-      </li> -->
       <li>
-        <a href="admin_dashboard.php" class="nav-link" role="button" data-bs-toggle="button" aria-pressed="true">
-          <svg class="bi me-2" width="16" height="16"><use xlink:href="#speedometer2"/></svg>
+        <a href="admin_dashboard.php" class="nav-link">
           Dashboard
         </a>
       </li>
       <li>
-        <a href="/TrackingOrder/admin_trackorder.php" class="nav-link">
-          <svg class="bi me-2" width="16" height="16"><use xlink:href="#table"/></svg>
+        <a href="admin_trackorder.php" class="nav-link">
           Track Orders
         </a>
       </li>
-      <!-- <li>
-        <a href="#"  class="nav-link" role="button" data-bs-toggle="button" aria-pressed="true">
-          <svg class="bi me-2" width="16" height="16"><use xlink:href="#people-circle"/></svg>
-          Edit User
-        </a>
-      </li>  -->
+
       <li class="nav-item">
-        <a href="../login.php"  class="nav-link" role="button" data-bs-toggle="button" aria-pressed="true">
-          <svg class="bi me-2" width="16" height="16"><use xlink:href="#home"/></svg>
+        <a href="../login.php"  class="nav-link">
           Sign out
         </a>
       </li>
@@ -95,7 +88,7 @@
     <div class="row justify-content-center mt-4">
         <!-- Create Order Button -->
         <div class="col-auto">
-            <a href="/Dashboard/admin_createorder.php" class="btn btn-outline-primary" style="height: 90px; width: 180px;">
+            <a href="admin_createorder.php" class="btn btn-outline-primary" style="height: 90px; width: 180px;">
                 <div class="fs-4 mb-3">
                     <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-cart-plus" viewBox="0 0 16 16">
                         <path d="M9 5.5a.5.5 0 0 0-1 0V7H6.5a.5.5 0 0 0 0 1H8v1.5a.5.5 0 0 0 1 0V8h1.5a.5.5 0 0 0 0-1H9z"/>
@@ -108,7 +101,7 @@
 
         <!-- Assign Orders Button -->
         <div class="col-auto">
-            <a href="../admin_createorder.php" class="btn btn-outline-primary" style="height: 90px; width: 180px;">
+            <a href="#" class="btn btn-outline-primary" style="height: 90px; width: 180px;">
                 <div class="fs-4 mb-3">
                     <svg xmlns="http://www.w3.org/2000/svg" width="35" height="35" fill="currentColor" class="bi bi-truck" viewBox="0 0 16 16">
                         <path d="M0 3.5A1.5 1.5 0 0 1 1.5 2h9A1.5 1.5 0 0 1 12 3.5V5h1.02a1.5 1.5 0 0 1 1.17.563l1.481 1.85a1.5 1.5 0 0 1 .329.938V10.5a1.5 1.5 0 0 1-1.5 1.5H14a2 2 0 1 1-4 0H5a2 2 0 1 1-3.998-.085A1.5 1.5 0 0 1 0 10.5zm1.294 7.456A2 2 0 0 1 4.732 11h5.536a2 2 0 0 1 .732-.732V3.5a.5.5 0 0 0-.5-.5h-9a.5.5 0 0 0-.5.5v7a.5.5 0 0 0 .294.456M12 10a2 2 0 0 1 1.732 1h.768a.5.5 0 0 0 .5-.5V8.35a.5.5 0 0 0-.11-.312l-1.48-1.85A.5.5 0 0 0 13.02 6H12zm-9 1a1 1 0 1 0 0 2 1 1 0 0 0 0-2m9 0a1 1 0 1 0 0 2 1 1 0 0 0 0-2"/>

@@ -29,13 +29,38 @@ class Admin extends User {
         }
     }
 
-    public function AssignOrderToDriver($OrderID, $UserID) {
+    public function AssignOrderToDriver($OrderId, $UserId) {
         // Implementation here
     }
-    public function TrackOrder($OrderID, $ClientID){
-        
-}
-public function UpdateOrderStatus($OrderID, $Status) {
+    public function TrackOrder($OrderID) {
+        $conn = new Database();
+        try {
+            // Check if the order exists
+            $query = "SELECT * FROM orders WHERE OrderId = :OrderID";
+            $statement = $conn->getStarted()->prepare($query);
+            $statement->bindParam(':OrderID', $OrderID);
+            $statement->execute();
+            $order = $statement->fetch(PDO::FETCH_ASSOC);
+    
+            if ($order) {
+                // Retrieve the Status from the database
+                $status = $order['Status'];  // Adjust column name if necessary
+                return $status;
+            } else {
+                header("Location: ../errordisplay.php");
+                exit();
+                
+            }
+        } catch (PDOException $e) {
+            echo "Error retrieving order status: " . $e->getMessage();
+            return null;
+        }
+    }
+    
+    
+    
+    
+public static function UpdateOrderStatus($OrderID, $Status) {
     $conn = new Database();
     try {
         // Check if the order exists

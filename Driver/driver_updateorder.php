@@ -1,17 +1,16 @@
 <?php
 session_start();
-
 require_once __DIR__ . '/../Classes/Driver.php';  // Include the Driver class
 use DELIVERY\Driver\Driver;
-
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (isset($_POST['OrderID'])) {
         if (!isset($_SESSION['record']) || !is_array($_SESSION['record'])) {
             $_SESSION['record'] = [];
         }
-
         // Ensure Status exists before using it
         $status = isset($_POST['status']) ? htmlspecialchars($_POST['status']) : 'Unknown';
+        date_default_timezone_set('Asia/Bangkok');
+
 
         $_SESSION['record'][] = [
             'OrderId' => htmlspecialchars($_POST['OrderID']),
@@ -19,7 +18,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             'Status' => $status,
             'Date' => date('Y-m-d H:i:s')
         ];
-
         // Update the order status in the database using the Driver class
         try {
             $driver = new Driver();  // Create an instance of the Driver class
@@ -31,8 +29,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             // Update the session with the retrieved ClientId
             if ($clientId) {
                 $_SESSION['record'][count($_SESSION['record']) - 1]['ClientId'] = $clientId; // Update the last entry
+                
             }
-
+            
         } catch (Exception $e) {
             echo "Failed to update order status: " . $e->getMessage();
         }
@@ -46,8 +45,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $_SESSION['record'] = array_values($_SESSION['record']);
         }
     }
+    header('Location: ' . $_SERVER['PHP_SELF']);
+    exit;
 }
-
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -56,24 +56,30 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="../css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <style>
-      /* .bd-placeholder-img {
-        font-size: 1.125rem;
-        text-anchor: middle;
-        -webkit-user-select: none;
-        -moz-user-select: none;
-        user-select: none;
-      }
-
-      @media (min-width: 768px) {
-        .bd-placeholder-img-lg {
-          font-size: 3.5rem;
-        }
-      } */
       #status-update-container {
-            margin-left: 1%;
-            margin-top: 5%;
-            width: 70em;
+            margin-left: 0%;
+            width: 65em;
             background-color: #f8f9fa;
+        }
+
+        .border {
+            border: 1px solid #ced4da;
+        }
+
+        .rounded {
+            border-radius: 0.25rem;
+        }
+
+        .custom-card {
+            margin-top: 20px;
+            height: 300px; /* Fixed height */
+            min-height: 300px; /* Ensure there’s enough space for content */
+            overflow-y: auto; /* Enable vertical scrolling */
+        }
+
+        .sidebar-logo {
+            max-width: 100%; /* Make logo responsive */
+            height: auto; /* Maintain aspect ratio */
         }
     </style>
     <title>Update Order</title>
@@ -81,34 +87,27 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 </head>
 <body>
 <main>
-
-  <div class="d-flex flex-column flex-shrink-0 p-3 text-white bg-dark" style="width: 280px;">
+  <div class="d-flex flex-column flex-shrink-0 p-3 text-white bg-dark" style="width: 200px;">
     <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
       <svg class="bi me-2" width="40" height="32"><use xlink:href="#bootstrap"/></svg>
       <span class="fs-4">RINDRA FAST DELIVERY</span>
     </a>
     <hr>
     <ul class="nav nav-pills flex-column mb-auto">
-      <li class="nav-item">
-        <a href="homepage.php" class="nav-link active" aria-current="page">
-          <svg class="bi me-2" width="16" height="16"><use xlink:href="#home"/></svg>
-          Home
-        </a>
-      </li>
       <li>
-        <a href="#" class="nav-link text-white">
+        <a href="driver_dashboard.php" class="nav-link">
           <svg class="bi me-2" width="16" height="16"><use xlink:href="#speedometer2"/></svg>
           Dashboard
         </a>
       </li>
       <li>
-        <a href="#" class="nav-link text-white">
+        <a href="#" class="nav-link">
           <svg class="bi me-2" width="16" height="16"><use xlink:href="#table"/></svg>
           Track Orders
         </a>
       </li>
       <li class="nav-item">
-        <a href="../login.php" class="nav-link text-white" aria-current="page">
+        <a href="../login.php" class="nav-link" aria-current="page">
           <svg class="bi me-2" width="16" height="16"><use xlink:href="#home"/></svg>
           Sign out
         </a>
@@ -116,17 +115,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     </ul>
     <hr>
   </div>
-
   <div class="b-example-divider"></div>
-
-
   <div id="status-update-container" class="border rounded p-4">
         <form id="status-update" method="post">
+        <div>
+                <h3 style="font-size: 30px">Update Order</h3>
+                <hr>
+            </div>
             <div class="mb-3">
-                <label for="order_id" class="form-label">Update Order Status</label>
                 <input type="text" name="OrderID" class="form-control" id="order_id" placeholder="Enter Order ID" required>
             </div>
-
             <div>
                 <select name="status" class="form-select" required>
                     <option selected>Select Order Status</option>
@@ -140,9 +138,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <button type="submit" class="btn btn-primary mt-2">Submit</button>
             </div>  
         </form>
-
         <br><hr>
-
         <div class="custom-card">
             <table class="table table-striped table-bordered custom-table">
                 <thead class="table-dark">
@@ -150,8 +146,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         <th scope="col">Order ID</th>
                         <th scope="col">Client ID</th>
                         <th scope="col">Status</th>
-                        <th scope="col">Date and Time</th>
-                        <th scope="col">Date and Time</th>
+                        <th scope="col">Update Status At</th>
+                        <th scope="col">Action</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -165,7 +161,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             <td>
                                 <form action="" method="post">
                                     <input type="hidden" name="index" value="<?php echo $index; ?>">
-                                    <button style="width: 40%;" type="submit" name="delete" class="btn btn-danger">Clear</button>
+                                    <button style="width: 50%;" type="submit" name="delete" class="btn btn-danger">Clear</button>
                                 </form>
                             </td>
                         </tr>
@@ -175,9 +171,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             </table>
         </div>
     </div>
-
   </main>
-
-
 </body>
 </html>
