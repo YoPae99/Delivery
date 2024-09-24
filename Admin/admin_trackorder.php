@@ -24,7 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 case 'PickedUp':
                     $rangeValue = 2;
                     break;
-                case 'OutForDelivery':
+                case 'Pending':
                     $rangeValue = 3;
                     break;
                 case 'Delivered':
@@ -137,7 +137,7 @@ input[type="range"]::-moz-range-thumb {
 }
 
 .status-labels h3:nth-child(2) {
-  margin-left: 8%; /* Align second label to the first stop */
+  margin-left: 8.5%; /* Align second label to the first stop */
 }
 
 .status-labels h3:nth-child(3) {
@@ -145,13 +145,19 @@ input[type="range"]::-moz-range-thumb {
 }
 
 .status-labels h3:nth-child(4) {
-  margin-left: 14%; /* Align fourth label to the third stop */
+  margin-left: 17%; /* Align fourth label to the third stop */
 }
 
 .status-labels h3:nth-child(5) {
 
-  margin-left: 12%; /* Adjust margin to center the last label */
+  margin-left: 15%; /* Adjust margin to center the last label */
 }
+        .custom-width-input {
+            width: 250px; /* Set the desired width */
+        }
+        .custom-width-button {
+            width: 100px; /* Set the desired width */
+        }
     </style>
     <title>Dashboard</title>
     <link href="../css/sidebar.css" rel="stylesheet">
@@ -194,15 +200,14 @@ input[type="range"]::-moz-range-thumb {
                 <h3 style="font-size: 30px">Track Order</h3>
                 <hr>
             </div>
-    <form method="POST" action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>">
-    <div class="mb-3">
-        <input type="text" name="OrderId" class="form-control" placeholder="Input Order ID" required>
+
+    <div class="d-flex align-items-center">
+        <form class="d-flex" method="POST" action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>">
+    
+        <input type="text" name="OrderId" class="form-control me-2 custom-width-input" placeholder="Input Order ID" required>
+        <button type="submit" class="d-flex btn btn-primary custom-width-button">Search</button>
+        </form>
     </div>
-    <div>
-        <button type="submit" class="btn btn-primary mt-2">Search</button>
-    </div>
-</form>
-  
 
     
     
@@ -211,7 +216,7 @@ input[type="range"]::-moz-range-thumb {
     <h3>Order Received</h3>
     <h3>Order Ready</h3>
     <h3>Picked up</h3>
-    <h3>Out for Delivery</h3>
+    <h3>Pending</h3>
     <h3>Delivered</h3>
   </div>
   <input type="range" class="form-range <?php echo $hideThumbClass; ?>" min="0" max="4" step="1" id="customRange3" value="<?php echo $rangeValue; ?>">

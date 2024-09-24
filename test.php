@@ -3,7 +3,7 @@ session_start();
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-require_once __DIR__ . '/../Database/Database.php'; 
+require_once __DIR__ . '../Database/Database.php'; 
 use DELIVERY\Database\Database;
 
 // Initialize database connection
@@ -21,13 +21,6 @@ function fetchAvailableDrivers() {
 // Check if the session ID is set
 if (isset($_SESSION['ID'])) {
     $userId = $_SESSION['ID'];
-
-    // Fetch the user's username
-    $stmt = $pdo->prepare("SELECT Name FROM user WHERE ID = :userId");
-    $stmt->bindParam(':userId', $userId);
-    $stmt->execute();
-    $user = $stmt->fetch(PDO::FETCH_ASSOC);
-    $username = $user ? $user['Name'] : 'User'; // Fallback to 'User' if not found
 
     // Initialize variable to hold availability status
     $availabilityStatus = null;
@@ -61,8 +54,7 @@ if (isset($_SESSION['ID'])) {
         if ($result) {
             $availabilityStatus = $result['AvailabilityStatus']; // Update availability status
         }
-        header('Location: ' . $_SERVER['PHP_SELF']);
-        exit;
+    
     }
 } else {
     echo "User is not logged in.";
@@ -185,10 +177,7 @@ $availableDrivers = fetchAvailableDrivers();
     <div class="d-flex flex-column flex-shrink-0 p-3 text-white bg-dark" style="width: 200px;">
         <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
             <svg class="bi me-2" width="40" height="32"><use xlink:href="#bootstrap"/></svg>
-            <span class="fs-4">Welcome Mr. <?php echo htmlspecialchars($username); ?> <!-- Greeting added here --></span>
-            
-            
-            </h4>
+            <span class="fs-4">RINDRA FAST DELIVERY</span>
         </a>
         <hr>
         <ul class="nav nav-pills flex-column mb-auto">
@@ -213,14 +202,11 @@ $availableDrivers = fetchAvailableDrivers();
 
     <div class="container content-container">
         <div id="overview-section" class="col-12 text-center">
-            <h4 style="background-color: #505963; color: white; font-size: 3rem;">
-            Welcome Mr. <?php echo htmlspecialchars($username); ?> <!-- Greeting added here -->
-            </h4>
             <h4 style="margin-top: 20px; padding: 15px; background-color: #505963; color: white; font-size: 2rem; border-radius: 10px; box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);">
-            Driver Overview   <!-- Greeting added here -->
+                Driver Overview
             </h4>
             <div class="row justify-content-center mt-4">
-            <div class="col-auto">
+                <div class="col-auto">
                     <a href="display_allusers.php" class="btn btn-custom btn-secondary">
                         <svg xmlns="http://www.w3.org/2000/svg" width="35" height="35" fill="currentColor" class="bi bi-box2" viewBox="0 0 16 16">
                             <path d="M2.95.4a1 1 0 0 1 .8-.4h8.5a1 1 0 0 1 .8.4l2.85 3.8a.5.5 0 0 1 .1.3V15a1 1 0 0 1-1 1H1a1 1 0 0 1-1-1V4.5a.5.5 0 0 1 .1-.3zM7.5 1H3.75L1.5 4h6zm1 0v3h6l-2.25-3zM15 5H1v10h14z"/>
@@ -237,33 +223,40 @@ $availableDrivers = fetchAvailableDrivers();
                         <h3 style="font-size:18px">Deliveries History:</h3> 
                     </a>
                 </div>
-               
             </div>
         </div>
 
-        <div id="quick-access-section" class="col-12">
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="card custom-card">
-                        <div class="card-body">
-                            <h5 class="card-title">Driver Availability</h5>
-<form method="POST" style="display: inline;">
-<div class="form-check form-switch d-flex align-items-center">
+        <form method="post" action="">
+    <div class="card mt-4">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">Availability Status</h4>
+        </div>
+        <div class="card-body">
+            <div class="form-check form-switch d-flex align-items-center">
                 <input class="form-check-input me-3" type="checkbox" name="toggle" id="toggleSwitch" value="on" <?php echo ($availabilityStatus === 'on') ? 'checked' : ''; ?>>
                 <label class="form-check-label" for="toggleSwitch">
                     <?php echo ($availabilityStatus === 'on') ? 'Available' : 'Unavailable'; ?>
                 </label>
             </div>
             <button type="submit" class="btn btn-primary mt-3">Update Status</button>
+        </div>
+    </div>
 </form>
 
-                        </div>
-                    </div>
-                </div>
-                
-            </div>
-        </div>
     </div>
 </main>
 </body>
 </html>
+
+<div class="col-md-6">
+                    <div class="card custom-card">
+                        <div class="card-body">
+                            <h5 class="card-title">Available Drivers</h5>
+                            <ul>
+                                <?php foreach ($availableDrivers as $driver): ?>
+                                    <li><?php echo htmlspecialchars($driver['DriverName']); ?></li>
+                                <?php endforeach; ?>
+                            </ul>
+                        </div>
+                    </div>
+                </div>

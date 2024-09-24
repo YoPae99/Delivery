@@ -6,21 +6,61 @@ ini_set('display_errors', 1);
 require_once __DIR__ . '/../Classes/Admin.php';
 use DELIVERY\Admin\Admin;
 
+// Function to fetch available drivers from the database
+function fetchAvailableDrivers() {
+    $db = new \DELIVERY\Database\Database();
+    $conn = $db->getStarted();
+    $drivers = [];
+    if ($conn) {
+        $stmt = $conn->prepare("
+            SELECT 
+                ID AS DriverID, 
+                Name AS DriverName 
+            FROM 
+                user 
+            WHERE 
+                Permission = 'driver' 
+                AND AvailabilityStatus = 'on'  -- Ensure only available drivers are fetched
+        ");
+        $stmt->execute();
+        $drivers = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+    return $drivers;
+}
+
 // Function to fetch orders from the database
 function fetchOrdersFromDatabase() {
     $db = new \DELIVERY\Database\Database();
     $conn = $db->getStarted();
     $orders = [];
     if ($conn) {
-        $stmt = $conn->prepare("SELECT ClientId, OrderId, Address, OrderDate FROM orders");
+        $stmt = $conn->prepare("
+            SELECT 
+                o.ClientId, 
+                o.OrderId, 
+                o.Address, 
+                o.OrderDate, 
+                u.Name AS DriverName 
+            FROM 
+                orders o 
+            LEFT JOIN 
+                user u ON o.DriverId = u.ID
+        ");
         $stmt->execute();
         $orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        //Testing
+        // var_dump($orders); 
     }
     return $orders;
 }
 
+
 // Initialize orders variable
 $orders = fetchOrdersFromDatabase();
+
+// Initialize available drivers variable
+$availableDrivers = fetchAvailableDrivers();
 
 // Check if the form is submitted
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -36,57 +76,65 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $stmt->bindParam(':orderId', $orderIdToDelete);
             $stmt->execute();
         }
-    } elseif (isset($_POST['ClientId']) && isset($_POST['Address'])) {
+    } elseif (isset($_POST['ClientId'], $_POST['Address'], $_POST['DriverId'])) {
         // Handle add order action
         $ClientId = htmlspecialchars($_POST['ClientId']);
         $Address = htmlspecialchars($_POST['Address']);
+        $DriverId = htmlspecialchars($_POST['DriverId']); // Capture selected Driver ID
 
-        try {
-            Admin::CreateOrder($ClientId, $Address);
-        } catch (PDOException $e) {
-            if ($e->getCode() == 23000) {
-                echo "<p style='color: red;'>Error: Client ID invalid. Please choose another.</p>";
-            } else {
-                echo "<p style='color: red;'>An unexpected error occurred: " . $e->getMessage() . "</p>";
+        // Ensure a driver is selected
+        if ($DriverId) {
+            try {
+                Admin::CreateOrder($ClientId, $Address, $DriverId); // Pass Driver ID to CreateOrder method
+            } catch (PDOException $e) {
+                if ($e->getCode() == 23000) {
+                    echo "<p style='color: red;'>Error: Client ID invalid. Please choose another.</p>";
+                } else {
+                    echo "<p style='color: red;'>An unexpected error occurred: " . $e->getMessage() . "</p>";
+                }
             }
+        } else {
+            echo "<p style='color: red;'>Error: You must select a driver to create an order.</p>";
         }
     }
 
     // Fetch the updated orders after any action
-    //To include newly created orderId (auto_increment)
     $orders = fetchOrdersFromDatabase();
     header('Location: ' . $_SERVER['PHP_SELF']);
     exit;
 }
-
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="../css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link href="../css/bootstrap.min.css" rel="stylesheet">
     <style>
         #status-update-container {
             margin-left: 0%;
-            width: 65em;
+            width: 78em;
             background-color: #f8f9fa;
         }
-
         .border {
             border: 1px solid #ced4da;
         }
-
         .rounded {
             border-radius: 0.25rem;
         }
-
         .custom-card {
             margin-top: 20px;
-            height: 300px; /* Fixed height */
-            min-height: 300px; /* Ensure there’s enough space for content */
-            overflow-y: auto; /* Enable vertical scrolling */
+            height: 380px;
+            min-height: 300px;
+            overflow-y: auto;
+        }
+        footer {
+            position: absolute;
+            bottom: 10px;
+            font-size: 14px;
+            color: #aaa;
         }
     </style>
     <title>Create Order</title>
@@ -98,7 +146,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     <div class="d-flex flex-column flex-shrink-0 p-3 text-white bg-dark" style="width: 200px;">
         <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
-            <!-- <img src="LOGO.PNG" alt="Logo" class="sidebar-logo"> -->
             <span class="fs-4">RINDRA FAST DELIVERY</span>
         </a>
         <hr>
@@ -114,6 +161,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             </li>
         </ul>
         <hr>
+        <footer>&copy; <?php echo date('Y'); ?> Rindra Fast Delivery</footer>
     </div>
 
     <div class="b-example-divider"></div>
@@ -131,6 +179,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <input type="text" name="Address" class="form-control" placeholder="Address" required>
             </div>
             <div>
+                <select class="form-select" name="DriverId" aria-label="Select Available Driver" required>
+                    <option selected disabled>Select Available Driver</option>
+                    <?php foreach ($availableDrivers as $driver): ?>
+                        <option value="<?php echo $driver['DriverID']; ?>"><?php echo $driver['DriverName']; ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+
+            <div>
                 <button type="submit" class="btn btn-primary mt-2">Submit</button>
             </div>  
         </form>
@@ -138,30 +195,30 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <br>
         <hr>
         <div class="custom-card">
-            <table class="table table-striped table-bordered custom-table">
-                <thead class="table-dark">
+            <table class="table table-secondary table-bordered custom-table">
+                <thead class="table-primary">
                     <tr>
-                        <th scope="col">No.</th>
                         <th scope="col">Client ID</th>
                         <th scope="col">Order ID</th>
                         <th scope="col">Address</th>
                         <th scope="col">Order Date</th>
+                        <th scope="col">Assigned Driver</th>
                         <th scope="col">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php if (!empty($orders)): ?>
-                        <?php foreach ($orders as $index => $entry): ?>
+                        <?php foreach ($orders as $entry): ?>
                             <tr>
-                                <th scope="row"><?php echo $index + 1; ?></th>
                                 <td><?php echo $entry['ClientId']; ?></td>
                                 <td><?php echo $entry['OrderId']; ?></td>
                                 <td><?php echo $entry['Address']; ?></td>
                                 <td><?php echo $entry['OrderDate']; ?></td>
+                                <td><?php echo $entry['DriverName'] ?: 'No Driver'; ?></td> <!-- Display DriverName -->
                                 <td>
                                     <form action="" method="post">
                                         <input type="hidden" name="OrderId" value="<?php echo $entry['OrderId']; ?>">
-                                        <button style="width: 70%;" type="submit" name="delete" class="btn btn-danger">Delete</button>
+                                        <button style="width: 100%;" type="submit" name="delete" class="btn btn-danger">Delete</button>
                                     </form>
                                 </td>
                             </tr>

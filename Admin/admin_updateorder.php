@@ -1,33 +1,43 @@
 <?php
 session_start();
-require_once __DIR__ . '/../Classes/Admin.php';  // Include the Driver class
+require_once __DIR__ . '/../Classes/Admin.php';  // Include the Admin class
 use DELIVERY\Admin\Admin;
+
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (isset($_POST['OrderID'])) {
         if (!isset($_SESSION['record']) || !is_array($_SESSION['record'])) {
             $_SESSION['record'] = [];
         }
+        
         // Ensure Status exists before using it
         $status = isset($_POST['status']) ? htmlspecialchars($_POST['status']) : 'Unknown';
+        $orderId = htmlspecialchars($_POST['OrderID']);
         date_default_timezone_set('Asia/Bangkok');
-        $_SESSION['record'][] = [
-            'OrderId' => htmlspecialchars($_POST['OrderID']),
-            'ClientId' => 'Unknown',  // Default value, will be updated after the function call
-            'Status' => $status,
-            'Date' => date('Y-m-d H:i:s')
-        ];
-        // Update the order status in the database using the Driver class
+        
+        // Check if the order is marked as 'Delivered'
+        // if ($status == 'Delivered') {
+        //     echo 'Order ' . $orderId . ' is delivered!';
+        // } else {
+
+            // Add the order details to the session
+            $_SESSION['record'][] = [
+                'OrderId' => $orderId,
+                'ClientId' => 'Unknown',  // Default value, will be updated after the function call
+                'Status' => $status,
+                'Date' => date('Y-m-d H:i:s')
+            ];
+        // }
+
+        // Update the order status in the database using the Admin class
         try {
-            $driver = new Admin();  // Create an instance of the Driver class
-            $orderId = htmlspecialchars($_POST['OrderID']);
+            $admin = new Admin();  // Create an instance of the Admin class
             
             // Call the UpdateOrderStatus function and pass OrderID and Status
-            $clientId = $driver->UpdateOrderStatus($orderId, $status);
+            $clientId = $admin->UpdateOrderStatus($orderId, $status);
             
             // Update the session with the retrieved ClientId
             if ($clientId) {
                 $_SESSION['record'][count($_SESSION['record']) - 1]['ClientId'] = $clientId; // Update the last entry
-                
             }
             
         } catch (Exception $e) {
@@ -35,7 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
     }
 
-    //delete button
+    // Handle delete button functionality
     if (isset($_POST['delete']) && isset($_POST['index'])) {
         $indexToDelete = intval($_POST['index']);
         if (isset($_SESSION['record'][$indexToDelete])) {
@@ -43,10 +53,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $_SESSION['record'] = array_values($_SESSION['record']);
         }
     }
+
+    // Redirect to avoid resubmission
     header('Location: ' . $_SERVER['PHP_SELF']);
     exit;
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -73,6 +86,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             height: 300px; /* Fixed height */
             min-height: 300px; /* Ensure there’s enough space for content */
             overflow-y: auto; /* Enable vertical scrolling */
+        }
+        footer {
+            position: absolute;
+            bottom: 10px;
+            font-size: 14px;
+            color: #aaa;
         }
     </style>
     <title>Update Order</title>
@@ -104,6 +123,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
       </li>
     </ul>
     <hr>
+            <footer>&copy; <?php echo date('Y'); ?> Rindra Fast Delivery</footer>
+
   </div>
   <div class="b-example-divider"></div>
   <div id="status-update-container" class="border rounded p-4">
