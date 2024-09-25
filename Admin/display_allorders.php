@@ -54,9 +54,9 @@ function fetchOrdersFromDatabase($status = null) {
 // Initialize orders variable
 $orders = fetchOrdersFromDatabase();
 
-// Check if the form is submitted
+//Deletion
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    // Handle delete action
+    // Handle delete action 
     if (isset($_POST['delete'])) {
         $orderIdToDelete = $_POST['OrderId'];
 
@@ -68,11 +68,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $stmt->bindParam(':orderId', $orderIdToDelete);
             $stmt->execute();
         }
-
-        // Reload page after deletion
+        // Optionally, redirect to the same page to refresh order list
         header('Location: ' . $_SERVER['PHP_SELF']);
         exit;
     }
+}
+
 
     // Handle status selection from the dropdown
     if (isset($_POST['Select'])) {
@@ -90,7 +91,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $orders = fetchOrdersFromDatabase(); // Fetch all orders if 'All' is selected
         }
     }
-}
 ?>
 
 <!DOCTYPE html>
@@ -133,26 +133,28 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             width: 100px; /* Set the desired width */
         }
     </style>
-    <title>Overview</title>
+    <title>Order Record</title>
     <link href="../css/sidebar.css" rel="stylesheet">
 </head>
 <body>
 <main>
 
     <div class="d-flex flex-column flex-shrink-0 p-3 text-white bg-dark" style="width: 200px;">
-        <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
-            <span class="fs-4">RINDRA FAST DELIVERY</span>
+    <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
+        <span style="margin-left: 35px;" class="fs-4">RINDRA</span>
         </a>
+        <span class="fs-4" >FAST DELIVERY</span>
         <hr>
         <ul class="nav nav-pills flex-column mb-auto">
             <li>
-                <a href="admin_dashboard.php" class="nav-link">Dashboard</a>
+                <a href="admin_dashboard.php" class="nav-link">
+                <svg class="bi me-2" width="16" height="16"><use xlink:href="#speedometer2"/></svg>
+                    Dashboard</a>
             </li>
             <li>
-                <a href="admin_trackorder.php" class="nav-link">Track Orders</a>
-            </li>
-            <li class="nav-item">
-                <a href="../login.php" class="nav-link">Sign out</a>
+                <a href="admin_trackorder.php" class="nav-link">
+                <svg class="bi me-2" width="16" height="16"><use xlink:href="#speedometer2"/></svg>
+                    Track Orders</a>
             </li>
         </ul>
         <hr>
@@ -191,7 +193,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         <th scope="col">Address</th>
                         <th scope="col">Order Date</th>
                         <th scope="col">Order Status</th>
-                        <th scope="col">Driver Status</th>
+                        <th scope="col">Assigned Driver</th>
                         <th scope="col">Actions</th>
                     </tr>
                 </thead>
@@ -206,7 +208,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                 <td><?php echo $entry['Address']; ?></td>
                                 <td><?php echo $entry['OrderDate']; ?></td>
                                 <td><?php echo $entry['Status'] ?: 'No Status'; ?></td>
-                                <td><?php echo $entry['DriverName'] ?: 'No Driver'; ?></td>
+                                <td><?php echo $entry['DriverName'] ?: 'None'; ?></td>
                                 <td>
                                     <form action="" method="post">
                                         <input type="hidden" name="OrderId" value="<?php echo $entry['OrderId']; ?>">

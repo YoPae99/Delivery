@@ -1,47 +1,62 @@
 <?php
 session_start();
-require_once __DIR__ . '/../Classes/Admin.php';
-use DELIVERY\Admin\Admin;
+require_once __DIR__ . '/../Classes/Client.php';
+use DELIVERY\Client\Client;
 
+// Ensure the client is logged in
+if (!isset($_SESSION['ID'])) {
+    // Redirect to login page if not logged in
+    header('Location: login.php');
+    exit;
+}
+
+$clientId = $_SESSION['ID']; // Retrieve logged-in client ID
 $status = null;
 $hideThumbClass = 'hide-thumb';  // Default to hide the thumb
 $rangeValue = 0;  // Default range value
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (isset($_POST['OrderId'])) {
-        $admin = new Admin();
-        $status = $admin->TrackOrder(htmlspecialchars($_POST['OrderId']));
+        $orderId = htmlspecialchars($_POST['OrderId']);
+        $client = new Client();
 
-        if ($status) {
-            // Set range value based on the status from the database
-            switch ($status) {
-                case 'OrderReceived':
-                    $rangeValue = 0;
-                    break;
-                case 'OrderReady':
-                    $rangeValue = 1;
-                    break;
-                case 'PickedUp':
-                    $rangeValue = 2;
-                    break;
-                case 'Pending':
-                    $rangeValue = 3;
-                    break;
-                case 'Delivered':
-                case 'Canceled':
-                    $rangeValue = 4;
-                    break;
-                default:
-                    $rangeValue = 0;
+        // Ensure the order belongs to the logged-in client before tracking
+        if ($client->doesOrderBelongToClient($orderId, $clientId)) {
+            $status = $client->TrackOrder($orderId);
+
+            if ($status) {
+                // Set range value based on the status from the database
+                switch ($status) {
+                    case 'OrderReceived':
+                        $rangeValue = 0;
+                        break;
+                    case 'OrderReady':
+                        $rangeValue = 1;
+                        break;
+                    case 'PickedUp':
+                        $rangeValue = 2;
+                        break;
+                    case 'Pending':
+                        $rangeValue = 3;
+                        break;
+                    case 'Delivered':
+                    case 'Canceled':
+                        $rangeValue = 4;
+                        break;
+                    default:
+                        $rangeValue = 0;
+                }
+                // Remove the hide-thumb class because an order was found
+                $hideThumbClass = '';  // Empty to show the thumb
             }
-            // Remove the hide-thumb class because an order was found
-            $hideThumbClass = '';  // Empty to show the thumb
+        } else {
+            // Error message if the order doesn't belong to the logged-in client
+            echo "<p style='color: red;'>Error: You can only track your own orders.</p>";
         }
-        
     }
 }
-
 ?>
+
 
 
 
@@ -174,13 +189,13 @@ input[type="range"]::-moz-range-thumb {
         <hr>
         <ul class="nav nav-pills flex-column mb-auto">
             <li>
-                <a href="admin_dashboard.php" class="nav-link">
+                <a href="client_dashboard.php" class="nav-link">
                 <svg class="bi me-2" width="16" height="16"><use xlink:href="#speedometer2"/></svg>
                     Dashboard
                 </a>
             </li>
             <li>
-                <a href="admin_trackorder.php" class="nav-link">
+                <a href="client_trackorder.php" class="nav-link">
                 <svg class="bi me-2" width="16" height="16"><use xlink:href="#speedometer2"/></svg>
                     Track Order
                 </a>

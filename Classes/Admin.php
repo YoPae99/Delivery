@@ -12,24 +12,26 @@ class Admin extends User {
         // Implementation here
     }
 
-    public static function CreateOrder($ClientId, $Address, $DriverId) {
+    public static function CreateOrder($ClientId, $Address, $DriverId, $Price) {
         $db = new \DELIVERY\Database\Database();
         $conn = $db->getStarted();
         if ($conn) {
             try {
                 $stmt = $conn->prepare("
-                    INSERT INTO orders (ClientId, Address, DriverId) 
-                    VALUES (:clientId, :address, :driverId)
+                    INSERT INTO orders (ClientId, Address, DriverId, price) 
+                    VALUES (:clientId, :address, :driverId, :price)
                 ");
                 $stmt->bindParam(':clientId', $ClientId);
                 $stmt->bindParam(':address', $Address);
-                $stmt->bindParam(':driverId', $DriverId); // Ensure this line is included
+                $stmt->bindParam(':driverId', $DriverId);
+                $stmt->bindParam(':price', $Price); // Correct price binding
                 $stmt->execute();
             } catch (PDOException $e) {
                 echo "An error occurred: " . $e->getMessage(); // Log the error
             }
         }
     }
+    
     
 
     public function AssignOrderToDriver($OrderId, $UserId) {

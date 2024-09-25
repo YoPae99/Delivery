@@ -39,40 +39,24 @@ function fetchOrdersFromDatabase() {
                 o.ClientId, 
                 o.OrderId, 
                 o.Address, 
-                o.price,
                 o.OrderDate, 
                 u.Name AS DriverName 
             FROM 
                 orders o 
             LEFT JOIN 
                 user u ON o.DriverId = u.ID
+            WHERE 
+                o.DriverId IS NULL  -- Only fetch orders without a driver assigned
         ");
         $stmt->execute();
         $orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        // For testing purposes: print the fetched orders
+        // var_dump($orders); 
     }
     return $orders;
 }
 
-// Function to check if ClientId belongs to a driver
-function checkClientRole($clientId) {
-    $db = new \DELIVERY\Database\Database();
-    $conn = $db->getStarted();
-    if ($conn) {
-        $stmt = $conn->prepare("
-            SELECT 
-                Permission 
-            FROM 
-                user 
-            WHERE 
-                ID = :clientId
-        ");
-        $stmt->bindParam(':clientId', $clientId);
-        $stmt->execute();
-        $result = $stmt->fetch(PDO::FETCH_ASSOC);
-        return $result['Permission'] ?? null; // Return the permission role
-    }
-    return null;
-}
 
 // Initialize orders variable
 $orders = fetchOrdersFromDatabase();
@@ -94,22 +78,27 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $stmt->bindParam(':orderId', $orderIdToDelete);
             $stmt->execute();
         }
-    } elseif (isset($_POST['ClientId'], $_POST['Address'], $_POST['Price'])) {
-        // Capture and sanitize the inputs
+    } elseif (isset($_POST['ClientId'], $_POST['Address'], $_POST['DriverId'], $_POST['OrderId'])) {
+        // Handle add order action
         $ClientId = htmlspecialchars($_POST['ClientId']);
         $Address = htmlspecialchars($_POST['Address']);
-        $DriverId = isset($_POST['DriverId']) ? htmlspecialchars($_POST['DriverId']) : null; // Allow DriverId to be null
-        $Price = htmlspecialchars($_POST['Price']);
+        $DriverId = htmlspecialchars($_POST['DriverId']); // Capture selected Driver ID
+        $OrderId = htmlspecialchars($_POST['OrderId']); // Capture Order ID
 
-        // Check the permission role of the provided ClientId
-        $clientRole = checkClientRole($ClientId);
-
-        if ($clientRole === 'driver') {
-            echo "<p style='color: red;'>Error: Drivers cannot create orders.</p>";
-        } else {
+        // Ensure a driver is selected
+        if ($DriverId && $OrderId) {
             try {
-                // Create order even if DriverId is null
-                Admin::CreateOrder($ClientId, $Address, $DriverId, $Price);
+                $db = new \DELIVERY\Database\Database();
+                $conn = $db->getStarted();
+
+                if ($conn) {
+                    // Update the order with the selected driver
+                    $stmt = $conn->prepare("UPDATE orders SET DriverId = :driverId WHERE OrderId = :orderId");
+                    $stmt->bindParam(':driverId', $DriverId);
+                    $stmt->bindParam(':orderId', $OrderId);
+                    $stmt->execute();
+                }
+                
             } catch (PDOException $e) {
                 if ($e->getCode() == 23000) {
                     echo "<p style='color: red;'>Error: Client ID invalid. Please choose another.</p>";
@@ -117,6 +106,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     echo "<p style='color: red;'>An unexpected error occurred: " . $e->getMessage() . "</p>";
                 }
             }
+        } else {
+            echo "<p style='color: red;'>Error: You must select a driver and an order to assign.</p>";
         }
     }
 
@@ -126,6 +117,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     exit;
 }
 ?>
+
+
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -157,19 +151,23 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             font-size: 14px;
             color: #aaa;
         }
+        .custom-width-select {
+            width: 250px; /* Set the desired width */
+        }
+        .custom-width-button {
+            width: 100px; /* Set the desired width */
+        }
     </style>
-    <title>Create Order</title>
+    <title>Assign Driver</title>
     <link href="../css/sidebar.css" rel="stylesheet">
 </head>
 <body>
 <main>
-    <h1 class="visually-hidden">Sidebars examples</h1>
-
     <div class="d-flex flex-column flex-shrink-0 p-3 text-white bg-dark" style="width: 200px;">
-        <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
-            <span style="margin-left: 35px;" class="fs-4">RINDRA</span>
+    <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
+        <span style="margin-left: 35px;" class="fs-4">RINDRA</span>
         </a>
-        <span class="fs-4">FAST DELIVERY</span>
+        <span class="fs-4" >FAST DELIVERY</span>
         <hr>
         <ul class="nav nav-pills flex-column mb-auto">
             <li>
@@ -190,35 +188,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <div class="b-example-divider"></div>
 
     <div id="status-update-container" class="border rounded p-4">
-        <form id="status-update" method="post" action="admin_createorder.php">
+        
             <div>
-                <h3 style="font-size: 30px">Add Order</h3>
+                <h3 style="font-size: 30px">Assign Driver</h3>
                 <hr>
             </div>
-            <div class="mb-3">
-                <input type="text" name="ClientId" class="form-control" placeholder="Client ID" required>
-            </div>
-            <div class="mb-3">
-                <input type="text" name="Address" class="form-control" placeholder="Address" required>
-            </div>
-            <div class="mb-3">
-                <input type="text" name="Price" class="form-control" placeholder="Order Price" required>
-            </div>
-            <div>
-                <select class="form-select" name="DriverId" aria-label="Select Available Driver">
-                    <option selected disabled>Select Available Driver</option>
-                    <?php foreach ($availableDrivers as $driver): ?>
-                        <option value="<?php echo $driver['DriverID']; ?>"><?php echo $driver['DriverName']; ?></option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
-            <div>
-                <button type="submit" class="btn btn-primary mt-2">Submit</button>
-            </div>
-        </form>
-
-        <br>
-        <hr>
         <div class="custom-card">
             <table class="table table-secondary table-bordered custom-table">
                 <thead class="table-primary">
@@ -226,7 +200,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         <th scope="col">Client ID</th>
                         <th scope="col">Order ID</th>
                         <th scope="col">Address</th>
-                        <th scope="col">Price</th>
                         <th scope="col">Order Date</th>
                         <th scope="col">Assigned Driver</th>
                         <th scope="col">Actions</th>
@@ -239,28 +212,37 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                 <td><?php echo $entry['ClientId']; ?></td>
                                 <td><?php echo $entry['OrderId']; ?></td>
                                 <td><?php echo $entry['Address']; ?></td>
-                                <td><?php echo $entry['price']; ?></td>
                                 <td><?php echo $entry['OrderDate']; ?></td>
-                                <td><?php echo $entry['DriverName'] ?: 'None'; ?></td>
+                                <td><?php echo $entry['DriverName'] ?: 'None'; ?></td> <!-- Display DriverName -->
                                 <td>
-                                <form action="" method="post">
+    <div class="d-flex align-items-center">
+        <form method="post" action="" class="d-flex">   
+            <input type="hidden" name="ClientId" value="<?php echo $entry['ClientId']; ?>"> <!-- Include ClientId -->
+            <input type="hidden" name="Address" value="<?php echo $entry['Address']; ?>"> <!-- Include Address -->
+            <input type="hidden" name="OrderId" value="<?php echo $entry['OrderId']; ?>"> <!-- Include OrderId -->
+            <select class="form-select form-select-sm me-2 custom-width-select" name="DriverId" aria-label="Select Available Driver" required>
+                <option selected disabled>Select Available Driver</option>
+                    <?php foreach ($availableDrivers as $driver): ?>
+                <option value="<?php echo $driver['DriverID']; ?>"><?php echo $driver['DriverName']; ?></option>
+                    <?php endforeach; ?>
+            </select>
+            <button type="submit" class="btn btn-success btn-sm custom-width-button">Assign</button>
+        </form>
+    </div>
+</td>
+                                <!-- <td>
+                                    <form action="" method="post">
                                         <input type="hidden" name="OrderId" value="<?php echo $entry['OrderId']; ?>">
-                                        <button type="submit" name="delete" class="btn btn-danger btn-sm">Delete</button>
+                                        <button style="width: 100%;" type="submit" name="delete" class="btn btn-danger">Delete</button>
                                     </form>
-                                </td>
+                                </td> -->
                             </tr>
                         <?php endforeach; ?>
-                    <?php else: ?>
-                        <tr>
-                            <td colspan="7" class="text-center">No orders found.</td>
-                        </tr>
                     <?php endif; ?>
                 </tbody>
             </table>
         </div>
     </div>
 </main>
-
-<script src="../js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

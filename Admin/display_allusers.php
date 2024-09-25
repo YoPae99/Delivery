@@ -6,7 +6,7 @@ use DELIVERY\Admin\Admin;
 use DELIVERY\Database\Database;
 
 // Function to fetch users from the database
-function fetchUsersFromDatabase($Permission = null) {
+function fetchUsersFromDatabase($filter = null) {
     $db = new Database();
     $conn = $db->getStarted();
     $users = [];
@@ -14,13 +14,20 @@ function fetchUsersFromDatabase($Permission = null) {
     if ($conn) {
         $baseQuery = "SELECT ID, Name, Age, Username, Email, CreatedTime, Permission FROM user";
         
-        if ($Permission && $Permission !== 'All') {
-            // Filter based on the permission role
-            $query = $baseQuery . " WHERE Permission = :Permission";
+        if ($filter) {
+            if ($filter === 'AvailableDrivers') {
+                // Filter for available drivers
+                $query = $baseQuery . " WHERE Permission = 'driver' AND AvailabilityStatus = 'on'";
+            } else {
+                // Filter based on the permission role
+                $query = $baseQuery . " WHERE Permission = :Permission";
+            }
             $stmt = $conn->prepare($query);
-            $stmt->bindParam(':Permission', $Permission);
+            if ($filter !== 'AvailableDrivers') {
+                $stmt->bindParam(':Permission', $filter);
+            }
         } else {
-            // Fetch all users if no filter is applied or 'All' is selected
+            // Fetch all users if no filter is applied
             $query = $baseQuery;
             $stmt = $conn->prepare($query);
         }
@@ -33,8 +40,8 @@ function fetchUsersFromDatabase($Permission = null) {
 }
 
 // Initialize users variable
-$selectedPermission = $_POST['Select'] ?? 'All';
-$users = fetchUsersFromDatabase($selectedPermission);
+$selectedFilter = $_POST['Select'] ?? null;
+$users = fetchUsersFromDatabase($selectedFilter);
 
 // Check if the form is submitted to delete a user
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete'])) {
@@ -93,7 +100,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete'])) {
         .custom-width-button {
             width: 100px; /* Set the desired width */
         }
-
     </style>
     <title>Overview</title>
     <link href="../css/sidebar.css" rel="stylesheet">
@@ -101,14 +107,20 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete'])) {
 <body>
 <main>
     <div class="d-flex flex-column flex-shrink-0 p-3 text-white bg-dark" style="width: 200px;">
-        <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
-            <span class="fs-4">RINDRA FAST DELIVERY</span>
+    <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
+        <span style="margin-left: 35px;" class="fs-4">RINDRA</span>
         </a>
+        <span class="fs-4" >FAST DELIVERY</span>
         <hr>
         <ul class="nav nav-pills flex-column mb-auto">
-            <li><a href="admin_dashboard.php" class="nav-link">Dashboard</a></li>
-            <li><a href="admin_trackorder.php" class="nav-link">Track Orders</a></li>
-            <li class="nav-item"><a href="../login.php" class="nav-link">Sign out</a></li>
+            <li><a href="admin_dashboard.php" class="nav-link">
+            <svg class="bi me-2" width="16" height="16"><use xlink:href="#speedometer2"/></svg>
+                Dashboard</a></li>
+
+            <li><a href="admin_trackorder.php" class="nav-link">
+            <svg class="bi me-2" width="16" height="16"><use xlink:href="#speedometer2"/></svg>
+                Track Orders</a></li>
+
         </ul>
         <hr>
         <footer>&copy; <?php echo date('Y'); ?> Rindra Fast Delivery</footer>
@@ -121,18 +133,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete'])) {
         </div>
 
         <div class="d-flex align-items-center">
-    <form method="post" action="" class="d-flex">
-        <select class="form-select form-select-sm me-2 custom-width-select" name="Select" aria-label="Small select example">
-            <option value="All" selected>All</option>
-            <option value="Client">Client</option>
-            <option value="Driver">Driver</option>
-            <option value="Admin">Admin</option>
-        </select>
-        <button type="submit" class="btn btn-primary btn-sm custom-width-button">Filter</button>
-    </form>
-</div>
-
-
+            <form method="post" action="" class="d-flex">
+                <select class="form-select form-select-sm me-2 custom-width-select" name="Select" aria-label="Small select example">
+                    <option value="" selected>All</option>
+                    <option value="Client">Client</option>
+                    <option value="Driver">Driver</option>
+                    <option value="Admin">Admin</option>
+                    <option value="AvailableDrivers">Available Drivers</option>
+                </select>
+                <button type="submit" class="btn btn-primary btn-sm custom-width-button">Filter</button>
+            </form>
+        </div>
 
         <div class="custom-card">
             <table class="table table-secondary table-bordered custom-table">

@@ -1,35 +1,43 @@
 <?php
 session_start();
-require_once __DIR__ . '/../Classes/Driver.php';  // Include the Driver class
-use DELIVERY\Driver\Driver;
+require_once __DIR__ . '/../Classes/Admin.php';  // Include the Admin class
+use DELIVERY\Admin\Admin;
+
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (isset($_POST['OrderID'])) {
         if (!isset($_SESSION['record']) || !is_array($_SESSION['record'])) {
             $_SESSION['record'] = [];
         }
+        
         // Ensure Status exists before using it
         $status = isset($_POST['status']) ? htmlspecialchars($_POST['status']) : 'Unknown';
+        $orderId = htmlspecialchars($_POST['OrderID']);
         date_default_timezone_set('Asia/Bangkok');
+        
+        // Check if the order is marked as 'Delivered'
+        // if ($status == 'Delivered') {
+        //     echo 'Order ' . $orderId . ' is delivered!';
+        // } else {
 
+            // Add the order details to the session
+            $_SESSION['record'][] = [
+                'OrderId' => $orderId,
+                'ClientId' => 'Unknown',  // Default value, will be updated after the function call
+                'Status' => $status,
+                'Date' => date('Y-m-d H:i:s')
+            ];
+        // }
 
-        $_SESSION['record'][] = [
-            'OrderId' => htmlspecialchars($_POST['OrderID']),
-            'ClientId' => 'Unknown',  // Default value, will be updated after the function call
-            'Status' => $status,
-            'Date' => date('Y-m-d H:i:s')
-        ];
-        // Update the order status in the database using the Driver class
+        // Update the order status in the database using the Admin class
         try {
-            $driver = new Driver();  // Create an instance of the Driver class
-            $orderId = htmlspecialchars($_POST['OrderID']);
+            $admin = new Admin();  // Create an instance of the Admin class
             
             // Call the UpdateOrderStatus function and pass OrderID and Status
-            $clientId = $driver->UpdateOrderStatus($orderId, $status);
+            $clientId = $admin->UpdateOrderStatus($orderId, $status);
             
             // Update the session with the retrieved ClientId
             if ($clientId) {
                 $_SESSION['record'][count($_SESSION['record']) - 1]['ClientId'] = $clientId; // Update the last entry
-                
             }
             
         } catch (Exception $e) {
@@ -37,7 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
     }
 
-    //delete button
+    // Handle delete button functionality
     if (isset($_POST['delete']) && isset($_POST['index'])) {
         $indexToDelete = intval($_POST['index']);
         if (isset($_SESSION['record'][$indexToDelete])) {
@@ -45,10 +53,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $_SESSION['record'] = array_values($_SESSION['record']);
         }
     }
+
+    // Redirect to avoid resubmission
     header('Location: ' . $_SERVER['PHP_SELF']);
     exit;
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -56,9 +67,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="../css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <style>
-      #status-update-container {
+        #status-update-container {
             margin-left: 0%;
-            width: 65em;
+            width: 78em;
             background-color: #f8f9fa;
         }
 
@@ -76,10 +87,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             min-height: 300px; /* Ensure there’s enough space for content */
             overflow-y: auto; /* Enable vertical scrolling */
         }
-
-        .sidebar-logo {
-            max-width: 100%; /* Make logo responsive */
-            height: auto; /* Maintain aspect ratio */
+        footer {
+            position: absolute;
+            bottom: 10px;
+            font-size: 14px;
+            color: #aaa;
         }
     </style>
     <title>Update Order</title>
@@ -88,32 +100,34 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <body>
 <main>
   <div class="d-flex flex-column flex-shrink-0 p-3 text-white bg-dark" style="width: 200px;">
-    <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
-      <svg class="bi me-2" width="40" height="32"><use xlink:href="#bootstrap"/></svg>
-      <span class="fs-4">RINDRA FAST DELIVERY</span>
-    </a>
+  <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
+        <span style="margin-left: 35px;" class="fs-4">RINDRA</span>
+        </a>
+        <span class="fs-4" >FAST DELIVERY</span>
     <hr>
     <ul class="nav nav-pills flex-column mb-auto">
       <li>
         <a href="driver_dashboard.php" class="nav-link">
-          <svg class="bi me-2" width="16" height="16"><use xlink:href="#speedometer2"/></svg>
+        <svg class="bi me-2" width="16" height="16"><use xlink:href="#speedometer2"/></svg>
           Dashboard
         </a>
       </li>
       <li>
-        <a href="#" class="nav-link">
-          <svg class="bi me-2" width="16" height="16"><use xlink:href="#table"/></svg>
-          Track Orders
+        <a href="driver_updateorder.php" class="nav-link">
+        <svg class="bi me-2" width="16" height="16"><use xlink:href="#speedometer2"/></svg>
+          Update Order
         </a>
       </li>
       <li class="nav-item">
-        <a href="../login.php" class="nav-link" aria-current="page">
-          <svg class="bi me-2" width="16" height="16"><use xlink:href="#home"/></svg>
+        <a href="/logout.php" class="nav-link">
+        <svg class="bi me-2" width="16" height="16"><use xlink:href="#speedometer2"/></svg>
           Sign out
         </a>
       </li>
     </ul>
     <hr>
+            <footer>&copy; <?php echo date('Y'); ?> Rindra Fast Delivery</footer>
+
   </div>
   <div class="b-example-divider"></div>
   <div id="status-update-container" class="border rounded p-4">
@@ -140,8 +154,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         </form>
         <br><hr>
         <div class="custom-card">
-            <table class="table table-striped table-bordered custom-table">
-                <thead class="table-dark">
+            <table class="table table-secondary table-bordered custom-table">
+                <thead class="table-primary">
                     <tr>
                         <th scope="col">Order ID</th>
                         <th scope="col">Client ID</th>
@@ -161,7 +175,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             <td>
                                 <form action="" method="post">
                                     <input type="hidden" name="index" value="<?php echo $index; ?>">
-                                    <button style="width: 50%;" type="submit" name="delete" class="btn btn-danger">Clear</button>
+                                    <button style="width: 70%;" type="submit" name="delete" class="btn btn-danger">Clear</button>
                                 </form>
                             </td>
                         </tr>

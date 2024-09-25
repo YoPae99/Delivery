@@ -3,30 +3,46 @@ session_start();
 require_once __DIR__ . '/../Database/Database.php';  // Include the Database class
 use DELIVERY\Database\Database;
 
+// Prevent caching
+header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+header("Expires: Sat, 26 Jul 1997 05:00:00 GMT"); // Date in the past
+header("Pragma: no-cache");
+
+// Check if the user is logged in
+if (!isset($_SESSION['user'])) {
+    echo "User is not logged in.";
+    header("Location: login.php"); // Redirect to login if not logged in
+    exit;
+}
+
+// Proceed if user is logged in
 $db = new Database();
 $conn = $db->getStarted(); // Assuming this method returns the DB connection
 
+// Fetch username from session
+$username = htmlspecialchars($_SESSION['user']['Name']);
+
 try {
     // SQL query to count users
-   // Count users
-$query1 = "SELECT COUNT(*) AS user_count FROM user"; // Replace 'user' with your actual table name
-$stmt1 = $conn->prepare($query1);
-$stmt1->execute();
-$result1 = $stmt1->fetch(PDO::FETCH_ASSOC);
-$user_count = $result1['user_count'];
+    $query1 = "SELECT COUNT(*) AS user_count FROM user"; // Replace 'user' with your actual table name
+    $stmt1 = $conn->prepare($query1);
+    $stmt1->execute();
+    $result1 = $stmt1->fetch(PDO::FETCH_ASSOC);
+    $user_count = $result1['user_count'];
 
-// Count orders
-$query2 = "SELECT COUNT(*) AS order_count FROM orders";
-$stmt2 = $conn->prepare($query2);
-$stmt2->execute();
-$result2 = $stmt2->fetch(PDO::FETCH_ASSOC);
-$order_count = $result2['order_count'];
-
+    // Count orders
+    $query2 = "SELECT COUNT(*) AS order_count FROM orders";
+    $stmt2 = $conn->prepare($query2);
+    $stmt2->execute();
+    $result2 = $stmt2->fetch(PDO::FETCH_ASSOC);
+    $order_count = $result2['order_count'];
 
 } catch (PDOException $e) {
     echo "Error: " . $e->getMessage();
 }
 ?>
+
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -102,22 +118,28 @@ $order_count = $result2['order_count'];
   <h1 class="visually-hidden">Sidebars examples</h1>
 
   <div class="d-flex flex-column flex-shrink-0 p-3 text-white bg-dark" style="width: 250px;">
-      <span class="fs-4">RINDRA FAST DELIVERY</span>
-    <hr>
+  <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
+        <span class="fs-4">Welcome</span>
+        </a>
+        <span class="fs-4">Mr. <?php echo htmlspecialchars($_SESSION['user']['Username']); ?></span>
+        <hr>
     <ul class="nav nav-pills flex-column mb-auto">
       <li>
         <a href="admin_dashboard.php" class="nav-link">
+        <svg class="bi me-2" width="16" height="16"><use xlink:href="#speedometer2"/></svg>
           Dashboard
         </a>
       </li>
       <li>
         <a href="admin_trackorder.php" class="nav-link">
+        <svg class="bi me-2" width="16" height="16"><use xlink:href="#speedometer2"/></svg>
           Track Orders
         </a>
       </li>
 
       <li class="nav-item">
-        <a href="../login.php"  class="nav-link">
+        <a href="/logout.php"  class="nav-link">
+        <svg class="bi me-2" width="16" height="16"><use xlink:href="#speedometer2"/></svg>
           Sign out
         </a>
       </li>
@@ -175,7 +197,7 @@ $order_count = $result2['order_count'];
                       </a>
                   </div>
                   <div class="col-auto">
-                      <a href="#" class="btn btn-outline-primary" style="height: 90px; width: 180px;">
+                      <a href="admin_assignorder.php" class="btn btn-outline-primary" style="height: 90px; width: 180px;">
                       <svg xmlns="http://www.w3.org/2000/svg" width="35" height="35" fill="currentColor" class="bi bi-truck" viewBox="0 0 16 16">
   <path d="M0 3.5A1.5 1.5 0 0 1 1.5 2h9A1.5 1.5 0 0 1 12 3.5V5h1.02a1.5 1.5 0 0 1 1.17.563l1.481 1.85a1.5 1.5 0 0 1 .329.938V10.5a1.5 1.5 0 0 1-1.5 1.5H14a2 2 0 1 1-4 0H5a2 2 0 1 1-3.998-.085A1.5 1.5 0 0 1 0 10.5zm1.294 7.456A2 2 0 0 1 4.732 11h5.536a2 2 0 0 1 .732-.732V3.5a.5.5 0 0 0-.5-.5h-9a.5.5 0 0 0-.5.5v7a.5.5 0 0 0 .294.456M12 10a2 2 0 0 1 1.732 1h.768a.5.5 0 0 0 .5-.5V8.35a.5.5 0 0 0-.11-.312l-1.48-1.85A.5.5 0 0 0 13.02 6H12zm-9 1a1 1 0 1 0 0 2 1 1 0 0 0 0-2m9 0a1 1 0 1 0 0 2 1 1 0 0 0 0-2"/>
 </svg>
@@ -196,6 +218,7 @@ $order_count = $result2['order_count'];
           </div>
       </div>
   </div>
+
 </main>
 </body>
 </html>

@@ -131,6 +131,7 @@ $availableDrivers = fetchAvailableDrivers();
         .content-container {
             margin-top: 20px;
             min-height: 100vh;
+            height: 100px;
         }
 
         .custom-switch {
@@ -174,6 +175,16 @@ $availableDrivers = fetchAvailableDrivers();
         .custom-switch:hover {
             background-color: #b3b3b3;
         }
+        .form-check-input {
+    width: 2em;  /* Adjust width of the checkbox */
+    height: 1em;  /* Adjust height of the checkbox */
+}
+
+.btn-custom {
+    padding: 0.5em 1em;  /* Adjust padding for the button */
+    font-size: 1em;  /* Increase font size */
+}
+
     </style>
     <title>Driver Dashboard</title>
     <link href="../css/sidebar.css" rel="stylesheet">
@@ -183,84 +194,84 @@ $availableDrivers = fetchAvailableDrivers();
     <h1 class="visually-hidden">Driver Dashboard</h1>
 
     <div class="d-flex flex-column flex-shrink-0 p-3 text-white bg-dark" style="width: 200px;">
-        <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
-            <svg class="bi me-2" width="40" height="32"><use xlink:href="#bootstrap"/></svg>
-            <span class="fs-4">Welcome Mr. <?php echo htmlspecialchars($username); ?> <!-- Greeting added here --></span>
-            
-            
-            </h4>
-        </a>
-        <hr>
-        <ul class="nav nav-pills flex-column mb-auto">
-            <li>
-                <a href="../Dashboard/driver_dashboard.php" class="nav-link">
-                    <svg class="bi me-2" width="16" height="16"><use xlink:href="#speedometer2"/></svg>
-                    Dashboard
-                </a>
-            </li>
-            <li>
-                <a href="login.php" class="nav-link">
-                    <svg class="bi me-2" width="16" height="16"><use xlink:href="#home"/></svg>
-                    Sign out
-                </a>
-            </li>
-        </ul>
-        <hr>
-        <footer>&copy; <?php echo date('Y'); ?> Rindra Fast Delivery</footer>
-    </div>
+    <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
+        <span class="fs-4">Welcome</span>
+    </a>
+    <span class="fs-4">Mr. <?php echo htmlspecialchars($username); ?></span>
+
+    <hr>
+    <ul class="nav nav-pills flex-column mb-auto">
+        <li>
+            <a href="driver_dashboard.php" class="nav-link">
+                <svg class="bi me-2" width="16" height="16"><use xlink:href="#speedometer2"/></svg>
+                Dashboard
+            </a>
+        </li>
+        <li>
+            <a href="driver_updateorder.php" class="nav-link">
+                <svg class="bi me-2" width="16" height="16"><use xlink:href="#speedometer2"/></svg>
+                Update Order
+            </a>
+        </li>
+        <li>
+            <a href="/logout.php" class="nav-link">
+                <svg class="bi me-2" width="16" height="16"><use xlink:href="#home"/></svg>
+                Sign out
+            </a>
+        </li>
+    </ul>
+    
+    <footer style="margin-bottom:40px"><div class="card-body">
+                
+            </div></footer>
+    <hr>
+    <footer class="mt-auto text-center">&copy; <?php echo date('Y'); ?> Rindra Fast Delivery</footer>
+</div>
+
 
     <div class="b-example-divider"></div>
 
     <div class="container content-container">
         <div id="overview-section" class="col-12 text-center">
-            <h4 style="background-color: #505963; color: white; font-size: 3rem;">
-            Welcome Mr. <?php echo htmlspecialchars($username); ?> <!-- Greeting added here -->
-            </h4>
+             
             <h4 style="margin-top: 20px; padding: 15px; background-color: #505963; color: white; font-size: 2rem; border-radius: 10px; box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);">
             Driver Overview   <!-- Greeting added here -->
             </h4>
+            <div>
+            <form method="POST" style="">
+                    <div style="margin-left: 40%;" class="form-check form-switch d-flex align-items-center">
+                        <input style="" class="form-check-input me-2" type="checkbox" name="toggle" id="toggleSwitch" value="on" <?php echo ($availabilityStatus === 'on') ? 'checked' : ''; ?>>
+                        <label style="font-weight: bold;" class="form-check-label" for="toggleSwitch">
+                                Availability Status: <span class="<?php echo ($availabilityStatus === 'on') ? 'text-success' : ''; ?>">
+                                <span class="<?php echo ($availabilityStatus === 'off') ? 'text-dark' : ''; ?>">
+                                    <?php echo ($availabilityStatus === 'on') ? 'Available' : 'Unavailable'; ?>
+                            </span>
+                        </label>
+
+                    </div>
+                    <button style="" type="submit" class="btn btn-dark btn-sm mt-2">Update Status</button>
+                </form>
+            </div>
+            
             <div class="row justify-content-center mt-4">
             <div class="col-auto">
-                    <a href="display_allusers.php" class="btn btn-custom btn-secondary">
+                    <a style="height: 100%;" href="driver_assignedorder.php" class="btn btn-custom btn-secondary">
                         <svg xmlns="http://www.w3.org/2000/svg" width="35" height="35" fill="currentColor" class="bi bi-box2" viewBox="0 0 16 16">
                             <path d="M2.95.4a1 1 0 0 1 .8-.4h8.5a1 1 0 0 1 .8.4l2.85 3.8a.5.5 0 0 1 .1.3V15a1 1 0 0 1-1 1H1a1 1 0 0 1-1-1V4.5a.5.5 0 0 1 .1-.3zM7.5 1H3.75L1.5 4h6zm1 0v3h6l-2.25-3zM15 5H1v10h14z"/>
                         </svg>
-                        <h3 style="font-size:18px">Assigned Orders:</h3>
+                        <h3 style="font-size:18px">Assigned Orders</h3>
                     </a>
                 </div>
                 <div class="col-auto">
-                    <a href="display_allorders.php" class="btn btn-custom btn-secondary">
+                    <a style="height: 100%;" href="driver_orderhistory.php" class="btn btn-custom btn-secondary">
                         <svg xmlns="http://www.w3.org/2000/svg" width="35" height="35" fill="currentColor" class="bi bi-card-checklist" viewBox="0 0 16 16">
                             <path d="M14.5 3a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-.5.5h-13a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5zm-13-1A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2z"/>
                             <path d="M7 5.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5m-1.496-.854a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0l-.5-.5a.5.5 0 1 1 .708-.708l.146.147 1.146-1.147a.5.5 0 0 1 .708 0M7 9.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5m-1.496-.854a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0l-.5-.5a.5.5 0 0 1 .708-.708l.146.147 1.146-1.147a.5.5 0 0 1 .708 0"/>
                         </svg>
-                        <h3 style="font-size:18px">Deliveries History:</h3> 
+                        <h3 style="font-size:18px">Deliveries History</h3> 
                     </a>
                 </div>
                
-            </div>
-        </div>
-
-        <div id="quick-access-section" class="col-12">
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="card custom-card">
-                        <div class="card-body">
-                            <h5 class="card-title">Driver Availability</h5>
-<form method="POST" style="display: inline;">
-<div class="form-check form-switch d-flex align-items-center">
-                <input class="form-check-input me-3" type="checkbox" name="toggle" id="toggleSwitch" value="on" <?php echo ($availabilityStatus === 'on') ? 'checked' : ''; ?>>
-                <label class="form-check-label" for="toggleSwitch">
-                    <?php echo ($availabilityStatus === 'on') ? 'Available' : 'Unavailable'; ?>
-                </label>
-            </div>
-            <button type="submit" class="btn btn-primary mt-3">Update Status</button>
-</form>
-
-                        </div>
-                    </div>
-                </div>
-                
             </div>
         </div>
     </div>
