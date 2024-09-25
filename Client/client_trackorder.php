@@ -99,7 +99,7 @@ input[type="range"]::-moz-range-thumb {
 
         #status-update-container {
             margin-left: 0%;
-            width: 78em;
+            width: 75.5em;
             background-color: #f8f9fa;
         }
 
@@ -120,12 +120,13 @@ input[type="range"]::-moz-range-thumb {
           margin-left: 1%;
           margin-right: 1%;
           margin-top: 10%;
-          width: 73.3em;
+          width: 71em;
           position: relative;
       }
 
       .form-range {
           width: 100% !important;
+          margin-right: 1%;
       }
 
       .status-labels {
@@ -152,7 +153,7 @@ input[type="range"]::-moz-range-thumb {
 }
 
 .status-labels h3:nth-child(2) {
-  margin-left: 11%; /* Align second label to the first stop */
+  margin-left: 10.7%; /* Align second label to the first stop */
 }
 
 .status-labels h3:nth-child(3) {
@@ -160,7 +161,7 @@ input[type="range"]::-moz-range-thumb {
 }
 
 .status-labels h3:nth-child(4) {
-  margin-left: 19%; /* Align fourth label to the third stop */
+  margin-left: 18.4%; /* Align fourth label to the third stop */
 }
 
 .status-labels h3:nth-child(5) {
@@ -181,21 +182,21 @@ input[type="range"]::-moz-range-thumb {
 <main>
     <h1 class="visually-hidden">Sidebars examples</h1>
 
-    <div class="d-flex flex-column flex-shrink-0 p-3 text-white bg-dark" style="width: 200px;">
+    <div class="d-flex flex-column flex-shrink-0 p-3 text-white bg-dark" style="width: 250px;">
     <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
-        <span style="margin-left: 35px;" class="fs-4">RINDRA</span>
+        <span style="margin-left: 51px;" class="fs-4">RINDRA</span>
         </a>
-        <span class="fs-4" >FAST DELIVERY</span>
+        <span style="margin-left: 20px;" class="fs-4" >FAST DELIVERY</span>
         <hr>
         <ul class="nav nav-pills flex-column mb-auto">
             <li>
-                <a href="client_dashboard.php" class="nav-link">
+                <a style="font-size: 20px;" href="client_dashboard.php" class="nav-link">
                 <svg class="bi me-2" width="16" height="16"><use xlink:href="#speedometer2"/></svg>
                     Dashboard
                 </a>
             </li>
             <li>
-                <a href="client_trackorder.php" class="nav-link">
+                <a style="font-size: 20px;" href="client_trackorder.php" class="nav-link">
                 <svg class="bi me-2" width="16" height="16"><use xlink:href="#speedometer2"/></svg>
                     Track Order
                 </a>
@@ -203,14 +204,14 @@ input[type="range"]::-moz-range-thumb {
 
         </ul>
         <hr>
-        <footer>&copy; <?php echo date('Y'); ?> Rindra Fast Delivery</footer>
+        <footer style="margin-left:1.5%">&copy; <?php echo date('Y'); ?> Rindra Fast Delivery</footer>
     </div>
 
     <div class="b-example-divider"></div>
  
     <div id="status-update-container" class="border rounded p-4">
     <div>
-                <h3 style="font-size: 30px">Track Order</h3>
+                <h3 style="font-size: 30px">Order Tracking</h3>
                 <hr>
             </div>
 

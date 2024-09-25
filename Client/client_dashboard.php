@@ -193,7 +193,7 @@ $availableDrivers = fetchAvailableDrivers();
 <main>
     <h1 class="visually-hidden">Driver Dashboard</h1>
 
-    <div class="d-flex flex-column flex-shrink-0 p-3 text-white bg-dark" style="width: 200px;">
+    <div class="d-flex flex-column flex-shrink-0 p-3 text-white bg-dark" style="width: 250px;">
     <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
         <span class="fs-4">Welcome</span>
     </a>
@@ -202,31 +202,33 @@ $availableDrivers = fetchAvailableDrivers();
     <hr>
     <ul class="nav nav-pills flex-column mb-auto">
         <li>
-            <a href="client_dashboard.php" class="nav-link">
+            <a style="font-size: 20px;" href="client_dashboard.php" class="nav-link">
                 <svg class="bi me-2" width="16" height="16"><use xlink:href="#speedometer2"/></svg>
                 Dashboard
             </a>
         </li>
         <li>
-            <a href="client_trackorder.php" class="nav-link">
+            <a style="font-size: 20px;" href="client_trackorder.php" class="nav-link">
                 <svg class="bi me-2" width="16" height="16"><use xlink:href="#speedometer2"/></svg>
                 Track Order
             </a>
         </li>
         <li>
-            <a href="/logout.php" class="nav-link">
-                <svg class="bi me-2" width="16" height="16"><use xlink:href="#home"/></svg>
+            <a style="font-size: 20px" href="/logout.php" class="nav-link">
+            <svg class="bi me-2" width="16" height="16"><use xlink:href="#speedometer2"/></svg>
+
                 Sign out
             </a>
         </li>
+
     </ul>
     
     <footer style="margin-bottom:40px"><div class="card-body">
                 
             </div></footer>
     <hr>
-    <footer class="mt-auto text-center">&copy; <?php echo date('Y'); ?> Rindra Fast Delivery</footer>
-</div>
+    <footer style="margin-left:1.5%">&copy; <?php echo date('Y'); ?> Rindra Fast Delivery</footer>
+    </div>
 
 
     <div class="b-example-divider"></div>

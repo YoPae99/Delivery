@@ -106,6 +106,7 @@ $availableDrivers = fetchAvailableDrivers();
         #overview-section,
         #quick-access-section {
             margin-bottom: 20px;
+            margin-right: 0px;
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
@@ -129,19 +130,8 @@ $availableDrivers = fetchAvailableDrivers();
         }
 
         .content-container {
-            margin-top: 20px;
+            margin-top: 0px;
             min-height: 100vh;
-            height: 100px;
-        }
-
-        .custom-switch {
-            position: relative;
-            width: 60px; /* Adjust width */
-            height: 30px; /* Adjust height */
-            background-color: #ccc;
-            border-radius: 30px; /* Make it round */
-            cursor: pointer;
-            transition: background-color 0.3s;
         }
 
         /* Hide the default checkbox */
@@ -181,9 +171,9 @@ $availableDrivers = fetchAvailableDrivers();
 }
 
 .btn-custom {
-    padding: 0.5em 1em;  /* Adjust padding for the button */
+    padding: 0.1em 0.1em;  /* Adjust padding for the button */
     font-size: 1em;  /* Increase font size */
-}
+}   
 
     </style>
     <title>Driver Dashboard</title>
@@ -193,7 +183,7 @@ $availableDrivers = fetchAvailableDrivers();
 <main>
     <h1 class="visually-hidden">Driver Dashboard</h1>
 
-    <div class="d-flex flex-column flex-shrink-0 p-3 text-white bg-dark" style="width: 200px;">
+    <div class="d-flex flex-column flex-shrink-0 p-3 text-white bg-dark" style="width: 250px;">
     <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
         <span class="fs-4">Welcome</span>
     </a>
@@ -202,20 +192,22 @@ $availableDrivers = fetchAvailableDrivers();
     <hr>
     <ul class="nav nav-pills flex-column mb-auto">
         <li>
-            <a href="driver_dashboard.php" class="nav-link">
-                <svg class="bi me-2" width="16" height="16"><use xlink:href="#speedometer2"/></svg>
+            <a style="font-size: 20px" href="driver_dashboard.php" class="nav-link">
+            <svg class="bi me-2" width="16" height="16"><use xlink:href="#speedometer2"/></svg>
                 Dashboard
             </a>
         </li>
         <li>
-            <a href="driver_updateorder.php" class="nav-link">
-                <svg class="bi me-2" width="16" height="16"><use xlink:href="#speedometer2"/></svg>
+            <a style="font-size: 20px" href="driver_updateorder.php" class="nav-link">
+            <svg class="bi me-2" width="16" height="16"><use xlink:href="#speedometer2"/></svg>
+
                 Update Order
             </a>
         </li>
         <li>
-            <a href="/logout.php" class="nav-link">
-                <svg class="bi me-2" width="16" height="16"><use xlink:href="#home"/></svg>
+            <a style="font-size: 20px" href="/logout.php" class="nav-link">
+            <svg class="bi me-2" width="16" height="16"><use xlink:href="#speedometer2"/></svg>
+
                 Sign out
             </a>
         </li>
@@ -225,7 +217,7 @@ $availableDrivers = fetchAvailableDrivers();
                 
             </div></footer>
     <hr>
-    <footer class="mt-auto text-center">&copy; <?php echo date('Y'); ?> Rindra Fast Delivery</footer>
+    <footer style="margin-left:1.5%">&copy; <?php echo date('Y'); ?> Rindra Fast Delivery</footer>
 </div>
 
 
@@ -239,9 +231,9 @@ $availableDrivers = fetchAvailableDrivers();
             </h4>
             <div>
             <form method="POST" style="">
-                    <div style="margin-left: 40%;" class="form-check form-switch d-flex align-items-center">
+                    <div style="margin-left: 36%;" class="form-check form-switch d-flex align-items-center">
                         <input style="" class="form-check-input me-2" type="checkbox" name="toggle" id="toggleSwitch" value="on" <?php echo ($availabilityStatus === 'on') ? 'checked' : ''; ?>>
-                        <label style="font-weight: bold;" class="form-check-label" for="toggleSwitch">
+                        <label style="font-weight: bold; font-size:larger;" class="form-check-label" for="toggleSwitch">
                                 Availability Status: <span class="<?php echo ($availabilityStatus === 'on') ? 'text-success' : ''; ?>">
                                 <span class="<?php echo ($availabilityStatus === 'off') ? 'text-dark' : ''; ?>">
                                     <?php echo ($availabilityStatus === 'on') ? 'Available' : 'Unavailable'; ?>
@@ -249,7 +241,7 @@ $availableDrivers = fetchAvailableDrivers();
                         </label>
 
                     </div>
-                    <button style="" type="submit" class="btn btn-dark btn-sm mt-2">Update Status</button>
+                    <button style="" type="submit" class="btn btn-dark btn-lg mt-2">Update Status</button>
                 </form>
             </div>
             
@@ -259,7 +251,7 @@ $availableDrivers = fetchAvailableDrivers();
                         <svg xmlns="http://www.w3.org/2000/svg" width="35" height="35" fill="currentColor" class="bi bi-box2" viewBox="0 0 16 16">
                             <path d="M2.95.4a1 1 0 0 1 .8-.4h8.5a1 1 0 0 1 .8.4l2.85 3.8a.5.5 0 0 1 .1.3V15a1 1 0 0 1-1 1H1a1 1 0 0 1-1-1V4.5a.5.5 0 0 1 .1-.3zM7.5 1H3.75L1.5 4h6zm1 0v3h6l-2.25-3zM15 5H1v10h14z"/>
                         </svg>
-                        <h3 style="font-size:18px">Assigned Orders</h3>
+                        <h3 style="font-size:25px">Assigned Orders</h3>
                     </a>
                 </div>
                 <div class="col-auto">
@@ -268,7 +260,7 @@ $availableDrivers = fetchAvailableDrivers();
                             <path d="M14.5 3a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-.5.5h-13a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5zm-13-1A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2z"/>
                             <path d="M7 5.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5m-1.496-.854a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0l-.5-.5a.5.5 0 1 1 .708-.708l.146.147 1.146-1.147a.5.5 0 0 1 .708 0M7 9.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5m-1.496-.854a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0l-.5-.5a.5.5 0 0 1 .708-.708l.146.147 1.146-1.147a.5.5 0 0 1 .708 0"/>
                         </svg>
-                        <h3 style="font-size:18px">Deliveries History</h3> 
+                        <h3 style="font-size:25px">Delivery History</h3> 
                     </a>
                 </div>
                

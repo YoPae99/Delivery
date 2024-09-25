@@ -77,21 +77,15 @@ try {
         #overview-section,
         #quick-access-section {
             margin-bottom: 20px;
-            padding: 20px;
+            padding: 40px;
             border-radius: 10px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
 
-        /* Updated background colors */
         #overview-section {
             background-color: #505963;
             color: white;
         }
-
-        /* #quick-access-section {
-            background-color: #007bff;
-            color: white;
-        } */
 
         .btn-custom {
             height: 90px;
@@ -100,17 +94,46 @@ try {
         }
 
         .btn-custom:hover {
-            background-color: #0056b3; /* Darker blue for hover effect */
-            color: white; /* White text on hover */
+            background-color: #0056b3;
+            color: white;
         }
 
         .content-container {
             margin-top: 10px;
             min-height: 100vh;
         }
+
+        @media (max-width: 768px) {
+            #overview-section, 
+            #quick-access-section {
+                padding: 20px;
+            }
+
+            .btn-custom {
+                height: 80px;
+                width: 160px;
+            }
+
+            footer {
+                position: relative;
+                margin-top: 20px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .btn-custom {
+                height: 70px;
+                width: 140px;
+                font-size: 14px;
+            }
+
+            h4 {
+                font-size: 1.5rem;
+            }
+        }
         
     </style>
-    <title>Dashboard</title>
+    <title>Admin Dashboard</title>
     <link href="../css/sidebar.css" rel="stylesheet">
 </head>
 <body>
@@ -125,27 +148,27 @@ try {
         <hr>
     <ul class="nav nav-pills flex-column mb-auto">
       <li>
-        <a href="admin_dashboard.php" class="nav-link">
+        <a style="font-size: 20px;" href="admin_dashboard.php" class="nav-link">
         <svg class="bi me-2" width="16" height="16"><use xlink:href="#speedometer2"/></svg>
           Dashboard
         </a>
       </li>
       <li>
-        <a href="admin_trackorder.php" class="nav-link">
+        <a style="font-size: 20px;" href="admin_trackorder.php" class="nav-link">
         <svg class="bi me-2" width="16" height="16"><use xlink:href="#speedometer2"/></svg>
           Track Orders
         </a>
       </li>
 
       <li class="nav-item">
-        <a href="/logout.php"  class="nav-link">
+        <a style="font-size: 20px;" href="/logout.php"  class="nav-link">
         <svg class="bi me-2" width="16" height="16"><use xlink:href="#speedometer2"/></svg>
           Sign out
         </a>
       </li>
     </ul>
     <hr>
-    <footer>&copy; <?php echo date('Y'); ?> Rindra Fast Delivery</footer>
+    <footer style="margin-left:1.5%">&copy; <?php echo date('Y'); ?> Rindra Fast Delivery</footer>
   </div>
 
   <div class="b-example-divider"></div>
@@ -156,7 +179,7 @@ try {
           <!-- Overview Section -->
           <div id="overview-section" class="col-12 text-center">
           <h4 style="margin-top: 20px; padding: 15px; background-color: #505963; color: white; font-size: 2rem; border-radius: 10px; box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);">
-          Overview
+            Admin Overview
               </h4>
               <div class="row justify-content-center mt-4">
 

@@ -17,8 +17,37 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $confirmPassword = $_POST['confirmpassword'];
 
     // Basic validation
+    $errors = [];
+
+    // Name validation
+    if (!preg_match("/^[a-zA-Z\s]+$/", $name)) {
+        $errors[] = "Name can only contain letters and spaces.";
+    }
+
+    // Age validation
+    if (!filter_var($age, FILTER_VALIDATE_INT) || $age < 1) {
+        $errors[] = "Age must be a valid positive integer.";
+    }
+
+    // Username validation
+    if (!preg_match("/^(?=.*[a-zA-Z])(?=.*[0-9]).{5,}$/", $username)) {
+        $errors[] = "Username must be at least 5 characters long and include both letters and numbers.";
+    }
+
+    // Password validation
+    if (!preg_match("/^(?=.*[A-Z])(?=.{8,})/", $password)) {
+        $errors[] = "Password must be at least 8 characters long and include at least one capital letter.";
+    }
+
     if ($password !== $confirmPassword) {
-        echo "Passwords do not match!";
+        $errors[] = "Passwords do not match!";
+    }
+
+    // If there are errors, display them and stop the execution
+    if (!empty($errors)) {
+        foreach ($errors as $error) {
+            echo "<p style='color: red;'>Error: $error</p>";
+        }
         exit;
     }
 

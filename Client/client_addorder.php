@@ -119,29 +119,29 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <main>
     <h1 class="visually-hidden">Sidebars examples</h1>
 
-    <div class="d-flex flex-column flex-shrink-0 p-3 text-white bg-dark" style="width: 200px;">
-        <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
-            <span style="margin-left: 35px;" class="fs-4">RINDRA</span>
+    <div class="d-flex flex-column flex-shrink-0 p-3 text-white bg-dark" style="width: 250px;">
+    <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
+        <span style="margin-left: 51px;" class="fs-4">RINDRA</span>
         </a>
-        <span class="fs-4">FAST DELIVERY</span>
+        <span style="margin-left: 20px;" class="fs-4" >FAST DELIVERY</span>
         <hr>
         <ul class="nav nav-pills flex-column mb-auto">
             <li>
-                <a href="client_dashboard.php" class="nav-link">
+                <a style="font-size: 20px;" href="client_dashboard.php" class="nav-link">
                 <svg class="bi me-2" width="16" height="16"><use xlink:href="#speedometer2"/></svg>
 
                     Dashboard</a>
             </li>
             <li>
-                <a href="client_trackorder.php" class="nav-link">
+                <a style="font-size: 20px;" href="client_trackorder.php" class="nav-link">
                 <svg class="bi me-2" width="16" height="16"><use xlink:href="#speedometer2"/></svg>
 
-                    Track Orders</a>
+                    Track Order</a>
             </li>
         </ul>
         <hr>
-        <footer>&copy; <?php echo date('Y'); ?> Rindra Fast Delivery</footer>
-    </div>
+        <footer style="margin-left:1.5%">&copy; <?php echo date('Y'); ?> Rindra Fast Delivery</footer>
+        </div>
 
     <div class="b-example-divider"></div>
 

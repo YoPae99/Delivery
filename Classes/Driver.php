@@ -2,10 +2,12 @@
 namespace DELIVERY\Driver;
 
 require_once __DIR__ . '/User.php';  // Adjust path based on file location
-if (!class_exists('DELIVERY\User\User')) {
-    echo "User class not found!";
-    exit;
-}
+
+//Debugging
+// if (!class_exists('DELIVERY\User\User')) {
+//     echo "User class not found!";
+//     exit;
+// }
 
 use DELIVERY\User\User;
 use DELIVERY\Database\Database;
