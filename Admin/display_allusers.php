@@ -173,11 +173,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete'])) {
                                 <td><?php echo $entry['CreatedTime']; ?></td>
                                 <td><?php echo $entry['Permission']; ?></td>
                                 <td>
+                                <form action="" method="post">
+                                        <input type="hidden" name="UserId" value="<?php echo $entry['ID']; ?>">
+                                        <button style="width: 100%;" type="submit" name="delete" class="btn btn-success">Modify</button>
+                                    </form>
                                     <form action="" method="post">
                                         <input type="hidden" name="UserId" value="<?php echo $entry['ID']; ?>">
                                         <button style="width: 100%;" type="submit" name="delete" class="btn btn-danger">Delete</button>
                                     </form>
                                 </td>
+                                
                             </tr>
                         <?php endforeach; ?>
                     <?php else: ?>

@@ -5,8 +5,8 @@ require_once __DIR__ . '/../Classes/Admin.php';
 use DELIVERY\Admin\Admin;
 use DELIVERY\Database\Database;
 
-// Function to fetch orders and emails from the database
-function fetchOrdersFromDatabase($status = null) {
+// Function to fetch orders from the database with pagination
+function fetchOrdersFromDatabase($status = null, $clientName = null, $limit = 5, $offset = 0) {
     $db = new Database();
     $conn = $db->getStarted();
     $orders = [];
@@ -17,24 +17,28 @@ function fetchOrdersFromDatabase($status = null) {
                       driver.Name AS DriverName 
                       FROM orders 
                       JOIN user ON orders.ClientId = user.ID 
-                      LEFT JOIN user AS driver ON orders.DriverId = driver.ID"; // Join to fetch driver's name
+                      LEFT JOIN user AS driver ON orders.DriverId = driver.ID";
 
         // Add condition based on status
         if ($status) {
             if ($status === 'Ongoing') {
-                // Fetch ongoing orders with multiple statuses
                 $query = $baseQuery . " WHERE orders.Status IN ('Order Received', 'Order Ready', 'Picked up', 'Pending')";
             } elseif ($status === 'New Order') {
-                // Fetch orders with null or blank status
                 $query = $baseQuery . " WHERE orders.Status IS NULL OR orders.Status = ''";
             } else {
-                // Fetch orders based on the provided status
                 $query = $baseQuery . " WHERE orders.Status = :status";
             }
         } else {
-            // Fetch all orders
             $query = $baseQuery;
         }
+
+        // Add condition for client name search
+        if ($clientName) {
+            $query .= " WHERE user.Name LIKE :clientName";
+        }
+
+        // Add LIMIT and OFFSET for pagination
+        $query .= " LIMIT :limit OFFSET :offset";
 
         $stmt = $conn->prepare($query);
 
@@ -42,6 +46,14 @@ function fetchOrdersFromDatabase($status = null) {
         if ($status && $status !== 'Ongoing' && $status !== 'New Order') {
             $stmt->bindParam(':status', $status);
         }
+        if ($clientName) {
+            $clientNameParam = '%' . $clientName . '%';
+            $stmt->bindParam(':clientName', $clientNameParam);
+        }
+
+        // Bind limit and offset
+        $stmt->bindValue(':limit', (int)$limit, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', (int)$offset, PDO::PARAM_INT);
 
         $stmt->execute();
         $orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -50,13 +62,58 @@ function fetchOrdersFromDatabase($status = null) {
     return $orders;
 }
 
+// Function to fetch total number of orders for pagination
+function fetchTotalOrdersCount($status = null, $clientName = null) {
+    $db = new Database();
+    $conn = $db->getStarted();
+    $totalOrders = 0;
 
-// Initialize orders variable
-$orders = fetchOrdersFromDatabase();
+    if ($conn) {
+        $baseQuery = "SELECT COUNT(*) as total FROM orders JOIN user ON orders.ClientId = user.ID";
 
-//Deletion
+        if ($status) {
+            $query = $baseQuery . " WHERE orders.Status = :status";
+        } else {
+            $query = $baseQuery;
+        }
+
+        if ($clientName) {
+            $query .= " WHERE user.Name LIKE :clientName";
+        }
+
+        $stmt = $conn->prepare($query);
+
+        if ($status) {
+            $stmt->bindParam(':status', $status);
+        }
+        if ($clientName) {
+            $clientNameParam = '%' . $clientName . '%';
+            $stmt->bindParam(':clientName', $clientNameParam);
+        }
+
+        $stmt->execute();
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        $totalOrders = $result['total'];
+    }
+
+    return $totalOrders;
+}
+
+// Get current page from URL, default is page 1
+$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+$limit = 7; // Records per page
+$offset = ($page - 1) * $limit; // Calculate offset for SQL query
+
+// Fetch orders with pagination
+$orders = fetchOrdersFromDatabase(null, null, $limit, $offset);
+
+// Fetch total number of orders for pagination
+$totalOrders = fetchTotalOrdersCount();
+$totalPages = ceil($totalOrders / $limit);
+
+// Handle deletion
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    // Handle delete action 
+    // Handle delete action
     if (isset($_POST['delete'])) {
         $orderIdToDelete = $_POST['OrderId'];
 
@@ -68,29 +125,35 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $stmt->bindParam(':orderId', $orderIdToDelete);
             $stmt->execute();
         }
-        // Optionally, redirect to the same page to refresh order list
+
+        // Optionally, refresh order list
         header('Location: ' . $_SERVER['PHP_SELF']);
         exit;
     }
 }
 
+// Handle status selection from the dropdown
+if (isset($_POST['Select'])) {
+    $selectedStatus = $_POST['Select'];
 
-    // Handle status selection from the dropdown
-    if (isset($_POST['Select'])) {
-        $selectedStatus = $_POST['Select'];
-
-        if ($selectedStatus == 'Proceeded') {
-            $orders = fetchOrdersFromDatabase('Delivered'); // Assuming 'Delivered' as proceeded
-        } elseif ($selectedStatus == 'Ongoing') {
-            $orders = fetchOrdersFromDatabase('Ongoing'); // Fetch ongoing orders with multiple statuses
-        } elseif ($selectedStatus == 'New Order') {
-            $orders = fetchOrdersFromDatabase('New Order'); // Fetch orders with null or blank status
-        } elseif ($selectedStatus == 'Canceled') {
-            $orders = fetchOrdersFromDatabase('Canceled'); // Fetch orders with null or blank status
-        } else {
-            $orders = fetchOrdersFromDatabase(); // Fetch all orders if 'All' is selected
-        }
+    if ($selectedStatus == 'Proceeded') {
+        $orders = fetchOrdersFromDatabase('Delivered', null, $limit, $offset); // Assuming 'Delivered' as proceeded
+    } elseif ($selectedStatus == 'Ongoing') {
+        $orders = fetchOrdersFromDatabase('Ongoing', null, $limit, $offset); // Fetch ongoing orders with multiple statuses
+    } elseif ($selectedStatus == 'New Order') {
+        $orders = fetchOrdersFromDatabase('New Order', null, $limit, $offset); // Fetch orders with null or blank status
+    } elseif ($selectedStatus == 'Canceled') {
+        $orders = fetchOrdersFromDatabase('Canceled', null, $limit, $offset); // Fetch orders with canceled status
+    } else {
+        $orders = fetchOrdersFromDatabase(null, null, $limit, $offset); // Fetch all orders if 'All' is selected
     }
+}
+
+// Handle search by client name
+if (isset($_POST['ClientName'])) {
+    $clientName = $_POST['ClientName'];
+    $orders = fetchOrdersFromDatabase(null, $clientName, $limit, $offset);
+}
 ?>
 
 <!DOCTYPE html>
@@ -128,9 +191,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
         .custom-width-select {
             width: 250px; /* Set the desired width */
+
         }
         .custom-width-button {
-            width: 100px; /* Set the desired width */
+            width: 150px; /* Set the desired width */
         }
     </style>
     <title>Order Record</title>
@@ -179,8 +243,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <option value="Canceled">Canceled</option>
                 </select>
                 <button type="submit" class="btn btn-primary btn-sm custom-width-button">Filter</button>
+                <!-- Search Bar -->
+                
             </form>
         </div>
+        <br>
+        <div class="d-flex align-items-center">
+    <form method="post" action="" class="d-flex">
+        <input style="width: " type="text" name="ClientName" class="form-control me-2" placeholder="Search by Name" required>
+        <button type="submit" class="btn btn-primary btn-sm custom-width-button">Search</button>
+    </form>
+</div>
+
 
         <div class="custom-card">
             <table class="table table-secondary table-striped-columns table-bordered">
@@ -225,6 +299,52 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 </tbody>
             </table>
         </div>
+<!-- Pagination buttons in the middle -->
+<div class="pagination mt-4 d-flex justify-content-center">
+    <!-- Always show Previous button, but disable it on the first page -->
+    <a style="width: 75px;" 
+   href="?page=<?php echo $page > 1 ? $page - 1 : 1; ?>" 
+   class="btn btn-secondary mx-1 d-flex justify-content-center <?php echo $page == 1 ? 'disabled' : ''; ?>">
+    Previous
+</a>
+
+
+    <?php
+    // Define the range of visible page numbers
+    $range = 2; // Show 2 page numbers before and after the current page
+    $start = max(1, $page - $range); // Starting point
+    $end = min($totalPages, $page + $range); // End point
+
+    // Show the first page and ellipsis if necessary
+    if ($start > 1) {
+        echo '<a href="?page=1" class="btn btn-light mx-1">1</a>';
+        if ($start > 2) {
+            echo '<span class="btn btn-light mx-1 disabled">...</span>';
+        }
+    }
+
+    // Loop to show page numbers within the calculated range
+    for ($i = $start; $i <= $end; $i++) {
+        echo '<a href="?page=' . $i . '" class="btn btn-' . ($i == $page ? 'primary' : 'light') . ' mx-1">' . $i . '</a>';
+    }
+
+    // Show the last page and ellipsis if necessary
+    if ($end < $totalPages) {
+        if ($end < $totalPages - 1) {
+            echo '<span class="btn btn-light mx-1 disabled">...</span>';
+        }
+        echo '<a href="?page=' . $totalPages . '" class="btn btn-light mx-1">' . $totalPages . '</a>';
+    }
+    ?>
+
+    <!-- Always show Next button, but disable it on the last page -->
+    <a style="width: 75px;" href="?page=<?php echo $page < $totalPages ? $page + 1 : $totalPages; ?>" 
+       class="btn btn-secondary mx-1 d-flex justify-content-center <?php echo $page == $totalPages ? 'disabled' : ''; ?>">
+        Next
+    </a>
+</div>
+
+
     </div>
 </main>
 </body>

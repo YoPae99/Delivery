@@ -32,8 +32,6 @@ class Admin extends User {
         }
     }
     
-    
-
     public function AssignOrderToDriver($OrderId, $UserId) {
         // Implementation here
     }
@@ -61,10 +59,7 @@ class Admin extends User {
             return null;
         }
     }
-    
-    
-    
-    
+     
 public static function UpdateOrderStatus($OrderID, $Status) {
     $conn = new Database();
     try {
@@ -97,5 +92,34 @@ public static function UpdateOrderStatus($OrderID, $Status) {
         return null;
     }
 }
+
+public function SearchOrderByClientName($Name) {
+    $conn = new Database();
+    try {
+        // Search for the client's orders by joining the orders and users tables
+        $query = "
+            SELECT orders.* 
+            FROM orders 
+            JOIN users ON orders.ClientID = users.ID 
+            WHERE users.Name = :Name";
+        
+        $statement = $conn->getStarted()->prepare($query);
+        $statement->bindParam(':Name', $Name); // Bind the client name
+        $statement->execute();
+
+        $orders = $statement->fetchAll(PDO::FETCH_ASSOC); // Fetch all orders matching the client name
+
+        if ($orders) {
+            return $orders; // Return the orders found
+        } else {
+            echo "No orders found for client: " . htmlspecialchars($Name);
+            return null;
+        }
+    } catch (PDOException $e) {
+        echo "Error searching for orders by client name: " . $e->getMessage();
+        return null;
+    }
+}
+
 }
 ?>

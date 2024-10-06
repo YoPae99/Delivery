@@ -1,13 +1,15 @@
 <?php
 namespace DELIVERY\Order;
 class Orders{
-    private $OrderID;
+    private $OrderId;
     private $ClientID;
+    private $DriverId;
+    private $Address;
     private $Status;
 
     //COnstructor
     public function __construct($ID, $ClientID){
-        $this->OrderID = $ID;
+        $this->OrderId = $ID;
         $this->ClientID = $ClientID;
         $this->Status = 'Pending';
     }
