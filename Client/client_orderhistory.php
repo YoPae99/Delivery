@@ -10,19 +10,34 @@ use DELIVERY\Database\Database;
 $db = new Database();
 $pdo = $db->getStarted();
 
-// Function to fetch client orders
-function fetchClientOrders($clientId) {
+// Function to fetch client orders that are delivered with pagination
+function fetchDeliveredClientOrdersWithPagination($clientId, $limit, $offset) {
     global $pdo;
-    // Fetch orders where the client ID matches and filter by delivered status
     $stmt = $pdo->prepare("
         SELECT o.OrderId, u.Name, u.Email, o.Address, o.OrderDate, o.Status, o.StatusUpdateAt
         FROM orders o 
         JOIN user u ON o.DriverId = u.ID 
-        WHERE o.ClientId = :clientId
+        WHERE o.ClientId = :clientId AND o.Status = 'Delivered'
+        LIMIT :limit OFFSET :offset
     ");
-    $stmt->bindParam(':clientId', $clientId);
+    $stmt->bindParam(':clientId', $clientId, PDO::PARAM_INT);
+    $stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
+    $stmt->bindParam(':offset', $offset, PDO::PARAM_INT);
     $stmt->execute();
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+// Function to fetch total delivered orders count for a client
+function fetchTotalDeliveredOrdersCount($clientId) {
+    global $pdo;
+    $stmt = $pdo->prepare("
+        SELECT COUNT(*) as total
+        FROM orders 
+        WHERE ClientId = :clientId AND Status = 'Delivered'
+    ");
+    $stmt->bindParam(':clientId', $clientId, PDO::PARAM_INT);
+    $stmt->execute();
+    return $stmt->fetch(PDO::FETCH_ASSOC)['total'];
 }
 
 // Check if the session ID is set
@@ -36,49 +51,46 @@ if (isset($_SESSION['ID'])) {
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
     $username = $user ? $user['Name'] : 'User'; // Fallback to 'User' if not found
 
-    // Fetch client orders for the logged-in user
-    $orders = fetchClientOrders($userId);
+    // Pagination setup
+    $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+    $limit = 7; // Records per page
+    $offset = ($page - 1) * $limit; // Calculate offset for SQL query
 
-    // Initialize variable to hold availability status
-    $availabilityStatus = null;
+    // Fetch delivered client orders for the logged-in user with pagination
+    $orders = fetchDeliveredClientOrdersWithPagination($userId, $limit, $offset);
 
-    // Fetch user's availability status
-    $stmt = $pdo->prepare("SELECT AvailabilityStatus FROM user WHERE ID = :userId");
-    $stmt->bindParam(':userId', $userId);
-    $stmt->execute();
-    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+    // Fetch total number of delivered orders for pagination
+    $totalOrders = fetchTotalDeliveredOrdersCount($userId);
+    $totalPages = ceil($totalOrders / $limit);
 
-    if ($result) {
-        $availabilityStatus = $result['AvailabilityStatus']; // Store the availability status
-    }
+} else {
+    echo "User is not logged in.";
+    exit;
+}
 
-    if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-        // Determine new status based on checkbox
-        $newStatus = (isset($_POST['toggle']) && $_POST['toggle'] === 'on') ? 'on' : 'off';
-    
-        // Update the database
-        $stmt = $pdo->prepare("UPDATE user SET AvailabilityStatus = :status WHERE ID = :userId");
-        $stmt->bindParam(':status', $newStatus);
-        $stmt->bindParam(':userId', $userId);
-        $stmt->execute();
-    
-        // Re-fetch the availability status after update
-        $stmt = $pdo->prepare("SELECT AvailabilityStatus FROM user WHERE ID = :userId");
-        $stmt->bindParam(':userId', $userId);
-        $stmt->execute();
-        $result = $stmt->fetch(PDO::FETCH_ASSOC);
-    
-        if ($result) {
-            $availabilityStatus = $result['AvailabilityStatus']; // Update availability status
+// Handle deletion
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    // Handle delete action
+    if (isset($_POST['delete'])) {
+        $orderIdToDelete = $_POST['OrderId'];
+
+        // Delete from the database
+        $db = new Database();
+        $conn = $db->getStarted();
+        if ($conn) {
+            $stmt = $conn->prepare("DELETE FROM orders WHERE OrderId = :orderId");
+            $stmt->bindParam(':orderId', $orderIdToDelete);
+            $stmt->execute();
         }
+
+        // Optionally, refresh order list
         header('Location: ' . $_SERVER['PHP_SELF']);
         exit;
     }
-} else {
-    echo "User is not logged in.";
-    exit; 
 }
 ?>
+
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -119,6 +131,15 @@ if (isset($_SESSION['ID'])) {
         .custom-width-button {
             width: 100px; /* Set the desired width */
         }
+        .pagination {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap; /* Allows pagination items to wrap within the container */
+}
+
+.page-item {
+    margin: 0 5px; /* Adds some spacing between items */
+}
     </style>
     <title>Client Order History</title>
     <link href="../css/sidebar.css" rel="stylesheet">
@@ -157,7 +178,7 @@ if (isset($_SESSION['ID'])) {
 
     <div id="status-update-container" class="border rounded p-4">
         <div>
-            <h3 style="font-size: 30px">Your Orders</h3>
+            <h3 style="font-size: 30px">Order History</h3>
             <hr>
         </div>
 
@@ -166,10 +187,10 @@ if (isset($_SESSION['ID'])) {
                 <thead class="table-primary">
                     <tr>
                         <th scope="col">No.</th>
-                        <th scope="col">Name</th>
+                        <th scope="col">Driver Name</th>
                         <th scope="col">Order ID</th>
                         <th scope="col">Address</th>
-                        <th scope="col">Contact</th>
+                        <!-- <th scope="col">Contact</th> -->
                         <th scope="col">Order Date</th>
                         <th scope="col">Order Delivered Date</th>
                         <th scope="col">Order Status</th>
@@ -183,7 +204,6 @@ if (isset($_SESSION['ID'])) {
                                 <td><?php echo htmlspecialchars($entry['Name'] ?? 'N/A'); ?></td>
                                 <td><?php echo htmlspecialchars($entry['OrderId'] ?? 'N/A'); ?></td>
                                 <td><?php echo htmlspecialchars($entry['Address'] ?? 'N/A'); ?></td>
-                                <td><?php echo htmlspecialchars($entry['Email'] ?? 'N/A'); ?></td>
                                 <td><?php echo htmlspecialchars($entry['OrderDate'] ?? 'N/A'); ?></td>
                                 <td><?php echo htmlspecialchars($entry['StatusUpdateAt'] ?? 'N/A'); ?></td>
                                 <td><?php echo htmlspecialchars($entry['Status'] ?? 'N/A'); ?></td>
@@ -197,6 +217,39 @@ if (isset($_SESSION['ID'])) {
                 </tbody>
             </table>
         </div>
+       <!-- Pagination -->
+       <div class="pagination mt-4 d-flex justify-content-center">
+        <nav aria-label="Page navigation">
+            <ul class="pagination">
+                <li class="page-item <?php if($page <= 1) echo 'disabled'; ?>">
+                    <a class="page-link" href="?page=1" aria-label="First">
+                        <span aria-hidden="true">&laquo;&laquo;</span>
+                    </a>
+                </li>
+                <li class="page-item <?php if($page <= 1) echo 'disabled'; ?>">
+                    <a class="page-link" href="?page=<?php echo $page - 1; ?>" aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+                <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+                    <li class="page-item <?php if($i == $page) echo 'active'; ?>">
+                        <a class="page-link" href="?page=<?php echo $i; ?>"><?php echo $i; ?></a>
+                    </li>
+                <?php endfor; ?>
+                <li class="page-item <?php if($page >= $totalPages) echo 'disabled'; ?>">
+                    <a class="page-link" href="?page=<?php echo $page + 1; ?>" aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+                <li class="page-item <?php if($page >= $totalPages) echo 'disabled'; ?>">
+                    <a class="page-link" href="?page=<?php echo $totalPages; ?>" aria-label="Last">
+                        <span aria-hidden="true">&raquo;&raquo;</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+        </div>
+        
     </div>
 </div>
 </main>

@@ -196,6 +196,15 @@ if (isset($_POST['ClientName'])) {
         .custom-width-button {
             width: 150px; /* Set the desired width */
         }
+        .pagination {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap; /* Allows pagination items to wrap within the container */
+}
+
+.page-item {
+    margin: 0 5px; /* Adds some spacing between items */
+}
     </style>
     <title>Order Record</title>
     <link href="../css/sidebar.css" rel="stylesheet">
@@ -232,9 +241,16 @@ if (isset($_POST['ClientName'])) {
             <h3 style="font-size: 30px">Order Record</h3>
             <hr>
         </div>
-
-        <div class="d-flex align-items-center">
+<div class="d-flex">
+    <div class="d-flex align-items-center">
+    <form method="post" action="" class="d-flex">
+        <input  type="text" name="ClientName" class="form-control me-2" placeholder="Search by Name" required>
+        <button style="width: 150px;" type="submit" class="btn btn-primary  custom-width-button">Search</button>
+    </form>
+</div>
+        <div class="d-flex" style="margin-left:40%">
             <form method="post" action="" class="d-flex">
+                
                 <select class="form-select form-select-sm me-2 custom-width-select" name="Select" aria-label="Small select example">
                     <option value="All" selected>All</option>
                     <option value="New Order">New Order</option>
@@ -242,19 +258,14 @@ if (isset($_POST['ClientName'])) {
                     <option value="Proceeded">Completed</option>
                     <option value="Canceled">Canceled</option>
                 </select>
-                <button type="submit" class="btn btn-primary btn-sm custom-width-button">Filter</button>
+                <button style="width: 107px;" type="submit" class="btn btn-primary  custom-width-button">Filter</button>
                 <!-- Search Bar -->
                 
             </form>
         </div>
-        <br>
-        <div class="d-flex align-items-center">
-    <form method="post" action="" class="d-flex">
-        <input style="width: " type="text" name="ClientName" class="form-control me-2" placeholder="Search by Name" required>
-        <button type="submit" class="btn btn-primary btn-sm custom-width-button">Search</button>
-    </form>
-</div>
 
+        
+</div>
 
         <div class="custom-card">
             <table class="table table-secondary table-striped-columns table-bordered">
@@ -284,10 +295,18 @@ if (isset($_POST['ClientName'])) {
                                 <td><?php echo $entry['Status'] ?: 'No Status'; ?></td>
                                 <td><?php echo $entry['DriverName'] ?: 'None'; ?></td>
                                 <td>
-                                    <form action="" method="post">
-                                        <input type="hidden" name="OrderId" value="<?php echo $entry['OrderId']; ?>">
-                                        <button style="width: 100%;" type="submit" name="delete" class="btn btn-danger">Delete</button>
-                                    </form>
+                                     <!-- Modify Form -->
+<form action="modify_orders.php" method="post" style="display: inline-block;">
+    <input type="hidden" name="OrderId" value="<?php echo $entry['OrderId']; ?>">
+    <button type="submit" name="modify" class="btn btn-success">Modify</button>
+</form>
+
+
+    <!-- Delete Form -->
+    <form action="" method="post" style="display: inline-block;">
+        <input type="hidden" name="OrderId" value="<?php echo $entry['OrderId']; ?>">
+        <button type="submit" name="delete" class="btn btn-danger">Delete</button>
+    </form>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
@@ -299,50 +318,39 @@ if (isset($_POST['ClientName'])) {
                 </tbody>
             </table>
         </div>
-<!-- Pagination buttons in the middle -->
-<div class="pagination mt-4 d-flex justify-content-center">
-    <!-- Always show Previous button, but disable it on the first page -->
-    <a style="width: 75px;" 
-   href="?page=<?php echo $page > 1 ? $page - 1 : 1; ?>" 
-   class="btn btn-secondary mx-1 d-flex justify-content-center <?php echo $page == 1 ? 'disabled' : ''; ?>">
-    Previous
-</a>
 
-
-    <?php
-    // Define the range of visible page numbers
-    $range = 2; // Show 2 page numbers before and after the current page
-    $start = max(1, $page - $range); // Starting point
-    $end = min($totalPages, $page + $range); // End point
-
-    // Show the first page and ellipsis if necessary
-    if ($start > 1) {
-        echo '<a href="?page=1" class="btn btn-light mx-1">1</a>';
-        if ($start > 2) {
-            echo '<span class="btn btn-light mx-1 disabled">...</span>';
-        }
-    }
-
-    // Loop to show page numbers within the calculated range
-    for ($i = $start; $i <= $end; $i++) {
-        echo '<a href="?page=' . $i . '" class="btn btn-' . ($i == $page ? 'primary' : 'light') . ' mx-1">' . $i . '</a>';
-    }
-
-    // Show the last page and ellipsis if necessary
-    if ($end < $totalPages) {
-        if ($end < $totalPages - 1) {
-            echo '<span class="btn btn-light mx-1 disabled">...</span>';
-        }
-        echo '<a href="?page=' . $totalPages . '" class="btn btn-light mx-1">' . $totalPages . '</a>';
-    }
-    ?>
-
-    <!-- Always show Next button, but disable it on the last page -->
-    <a style="width: 75px;" href="?page=<?php echo $page < $totalPages ? $page + 1 : $totalPages; ?>" 
-       class="btn btn-secondary mx-1 d-flex justify-content-center <?php echo $page == $totalPages ? 'disabled' : ''; ?>">
-        Next
-    </a>
-</div>
+        <!-- Pagination -->
+       <div class="pagination mt-4 d-flex justify-content-center">
+        <nav aria-label="Page navigation">
+            <ul class="pagination">
+                <li class="page-item <?php if($page <= 1) echo 'disabled'; ?>">
+                    <a class="page-link" href="?page=1" aria-label="First">
+                        <span aria-hidden="true">&laquo;&laquo;</span>
+                    </a>
+                </li>
+                <li class="page-item <?php if($page <= 1) echo 'disabled'; ?>">
+                    <a class="page-link" href="?page=<?php echo $page - 1; ?>" aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+                <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+                    <li class="page-item <?php if($i == $page) echo 'active'; ?>">
+                        <a class="page-link" href="?page=<?php echo $i; ?>"><?php echo $i; ?></a>
+                    </li>
+                <?php endfor; ?>
+                <li class="page-item <?php if($page >= $totalPages) echo 'disabled'; ?>">
+                    <a class="page-link" href="?page=<?php echo $page + 1; ?>" aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+                <li class="page-item <?php if($page >= $totalPages) echo 'disabled'; ?>">
+                    <a class="page-link" href="?page=<?php echo $totalPages; ?>" aria-label="Last">
+                        <span aria-hidden="true">&raquo;&raquo;</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+        </div>
 
 
     </div>

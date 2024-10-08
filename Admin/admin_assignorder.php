@@ -5,118 +5,100 @@ ini_set('display_errors', 1);
 
 require_once __DIR__ . '/../Classes/Admin.php';
 use DELIVERY\Admin\Admin;
+use DELIVERY\Database\Database;
 
-// Function to fetch available drivers from the database
-function fetchAvailableDrivers() {
-    $db = new \DELIVERY\Database\Database();
-    $conn = $db->getStarted();
-    $drivers = [];
-    if ($conn) {
-        $stmt = $conn->prepare("
-            SELECT 
-                ID AS DriverID, 
-                Name AS DriverName 
-            FROM 
-                user 
-            WHERE 
-                Permission = 'driver' 
-                AND AvailabilityStatus = 'on'  -- Ensure only available drivers are fetched
-        ");
-        $stmt->execute();
-        $drivers = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
-    return $drivers;
+// Check if the session ID is set, otherwise exit
+if (!isset($_SESSION['ID'])) {
+    echo "User is not logged in.";
+    exit;
 }
 
-// Function to fetch orders from the database
-function fetchOrdersFromDatabase() {
-    $db = new \DELIVERY\Database\Database();
-    $conn = $db->getStarted();
-    $orders = [];
-    if ($conn) {
-        $stmt = $conn->prepare("
-            SELECT 
-                o.ClientId, 
-                o.OrderId, 
-                o.Address, 
-                o.OrderDate, 
-                u.Name AS DriverName 
-            FROM 
-                orders o 
-            LEFT JOIN 
-                user u ON o.DriverId = u.ID
-            WHERE 
-                o.DriverId IS NULL  -- Only fetch orders without a driver assigned
-        ");
-        $stmt->execute();
-        $orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
+$userId = $_SESSION['ID'];
 
-        // For testing purposes: print the fetched orders
-        // var_dump($orders); 
-    }
-    return $orders;
+// Database connection setup
+$db = new Database();
+$conn = $db->getStarted();
+
+if (!$conn) {
+    echo "Database connection failed.";
+    exit;
+}
+
+// Function to fetch available drivers
+function fetchAvailableDrivers($conn) {
+    $stmt = $conn->prepare("
+        SELECT 
+            ID AS DriverID, 
+            Name AS DriverName 
+        FROM 
+            user 
+        WHERE 
+            Permission = 'driver' 
+            AND AvailabilityStatus = 'on'
+    ");
+    $stmt->execute();
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+// Function to fetch orders without a driver assigned
+function fetchOrdersFromDatabase($conn) {
+    $stmt = $conn->prepare("
+        SELECT 
+            o.ClientId, 
+            o.OrderId, 
+            o.Address, 
+            o.OrderDate, 
+            u.Name AS DriverName 
+        FROM 
+            orders o 
+        LEFT JOIN 
+            user u ON o.DriverId = u.ID
+        WHERE 
+            o.DriverId IS NULL
+    ");
+    $stmt->execute();
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
 
-// Initialize orders variable
-$orders = fetchOrdersFromDatabase();
 
-// Initialize available drivers variable
-$availableDrivers = fetchAvailableDrivers();
-
-// Check if the form is submitted
+// Handle form submissions (Assign Driver / Delete Order)
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (isset($_POST['delete'])) {
         // Handle delete action
         $orderIdToDelete = $_POST['OrderId'];
-
-        // Delete from the database
-        $db = new \DELIVERY\Database\Database();
-        $conn = $db->getStarted();
-        if ($conn) {
-            $stmt = $conn->prepare("DELETE FROM orders WHERE OrderId = :orderId");
-            $stmt->bindParam(':orderId', $orderIdToDelete);
-            $stmt->execute();
-        }
+        $stmt = $conn->prepare("DELETE FROM orders WHERE OrderId = :orderId");
+        $stmt->bindParam(':orderId', $orderIdToDelete);
+        $stmt->execute();
     } elseif (isset($_POST['ClientId'], $_POST['Address'], $_POST['DriverId'], $_POST['OrderId'])) {
-        // Handle add order action
+        // Handle assigning driver to order
         $ClientId = htmlspecialchars($_POST['ClientId']);
         $Address = htmlspecialchars($_POST['Address']);
-        $DriverId = htmlspecialchars($_POST['DriverId']); // Capture selected Driver ID
-        $OrderId = htmlspecialchars($_POST['OrderId']); // Capture Order ID
+        $DriverId = htmlspecialchars($_POST['DriverId']); 
+        $OrderId = htmlspecialchars($_POST['OrderId']);
 
-        // Ensure a driver is selected
         if ($DriverId && $OrderId) {
             try {
-                $db = new \DELIVERY\Database\Database();
-                $conn = $db->getStarted();
-
-                if ($conn) {
-                    // Update the order with the selected driver
-                    $stmt = $conn->prepare("UPDATE orders SET DriverId = :driverId WHERE OrderId = :orderId");
-                    $stmt->bindParam(':driverId', $DriverId);
-                    $stmt->bindParam(':orderId', $OrderId);
-                    $stmt->execute();
-                }
-                
+                $stmt = $conn->prepare("UPDATE orders SET DriverId = :driverId WHERE OrderId = :orderId");
+                $stmt->bindParam(':driverId', $DriverId);
+                $stmt->bindParam(':orderId', $OrderId);
+                $stmt->execute();
             } catch (PDOException $e) {
-                if ($e->getCode() == 23000) {
-                    echo "<p style='color: red;'>Error: Client ID invalid. Please choose another.</p>";
-                } else {
-                    echo "<p style='color: red;'>An unexpected error occurred: " . $e->getMessage() . "</p>";
-                }
+                echo "<p style='color: red;'>An unexpected error occurred: " . $e->getMessage() . "</p>";
             }
         } else {
             echo "<p style='color: red;'>Error: You must select a driver and an order to assign.</p>";
         }
     }
 
-    // Fetch the updated orders after any action
-    $orders = fetchOrdersFromDatabase();
+    // After form submission, redirect to avoid resubmission on page refresh
     header('Location: ' . $_SERVER['PHP_SELF']);
     exit;
 }
+$orders = fetchOrdersFromDatabase($conn);
+$availableDrivers = fetchAvailableDrivers($conn);
 ?>
+
 
 
 <!DOCTYPE html>
@@ -234,6 +216,40 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 </tbody>
             </table>
         </div>
+
+        <!-- Pagination -->
+       <!-- <div class="pagination mt-4 d-flex justify-content-center">
+        <nav aria-label="Page navigation">
+            <ul class="pagination">
+                <li class="page-item <?php if($page <= 1) echo 'disabled'; ?>">
+                    <a class="page-link" href="?page=1" aria-label="First">
+                        <span aria-hidden="true">&laquo;&laquo;</span>
+                    </a>
+                </li>
+                <li class="page-item <?php if($page <= 1) echo 'disabled'; ?>">
+                    <a class="page-link" href="?page=<?php echo $page - 1; ?>" aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+                <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+                    <li class="page-item <?php if($i == $page) echo 'active'; ?>">
+                        <a class="page-link" href="?page=<?php echo $i; ?>"><?php echo $i; ?></a>
+                    </li>
+                <?php endfor; ?>
+                <li class="page-item <?php if($page >= $totalPages) echo 'disabled'; ?>">
+                    <a class="page-link" href="?page=<?php echo $page + 1; ?>" aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+                <li class="page-item <?php if($page >= $totalPages) echo 'disabled'; ?>">
+                    <a class="page-link" href="?page=<?php echo $totalPages; ?>" aria-label="Last">
+                        <span aria-hidden="true">&raquo;&raquo;</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+        </div> -->
+
     </div>
 </main>
 </body>

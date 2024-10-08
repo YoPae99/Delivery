@@ -9,6 +9,8 @@ use DELIVERY\Admin\Admin;
 // Initialize error messages
 $errorMessage = ''; // For general errors
 $priceError = ''; // For price-related errors
+$clientIdError = ''; // For Client ID related errors
+$addressError = ''; // For Address related errors
 
 // Function to check if ClientId belongs to a driver
 function checkClientRole($clientId) {
@@ -50,6 +52,19 @@ function fetchOrdersFromDatabase() {
     return $orders;
 }
 
+// Function to check if ClientId exists in the database and fetch its role
+function checkClientIdExists($clientId) {
+    $db = new \DELIVERY\Database\Database();
+    $conn = $db->getStarted();
+    if ($conn) {
+        $stmt = $conn->prepare("SELECT Permission FROM user WHERE ID = :clientId");
+        $stmt->bindParam(':clientId', $clientId);
+        $stmt->execute();
+        return $stmt->fetch(PDO::FETCH_ASSOC); // Return permission if exists, otherwise false
+    }
+    return false;
+}
+
 // Initialize orders and available drivers
 $orders = fetchOrdersFromDatabase();
 $availableDrivers = fetchAvailableDrivers();
@@ -66,41 +81,61 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $stmt->bindParam(':orderId', $orderIdToDelete);
             $stmt->execute();
         }
-    } elseif (isset($_POST['ClientId'], $_POST['Address'], $_POST['Price'])) {
+    } elseif (isset($_POST['ClientId'], $_POST['Address'], $_POST['Price'])) { // Corrected structure here
         // Capture and sanitize the inputs
-        $ClientId = htmlspecialchars($_POST['ClientId']);
-        $Address = htmlspecialchars($_POST['Address']);
-        $DriverId = isset($_POST['DriverId']) ? htmlspecialchars($_POST['DriverId']) : null; // Allow DriverId to be null
-        $Price = htmlspecialchars($_POST['Price']);
+        $ClientId = htmlspecialchars(trim($_POST['ClientId']));
+        $Address = htmlspecialchars(trim($_POST['Address']));
+        $DriverId = isset($_POST['DriverId']) ? htmlspecialchars(trim($_POST['DriverId'])) : null; // Allow DriverId to be null
+        $Price = htmlspecialchars(trim($_POST['Price']));
+
+        // Validate Client ID
+        if (empty($ClientId)) {
+            $clientIdError = "Error: Client ID cannot be empty.";
+        } else {
+            // Check if the Client ID exists
+            $clientData = checkClientIdExists($ClientId);
+            if (!$clientData) {
+                $clientIdError = "Error: Client ID does not exist.";
+            } else {
+                // Check the permission role of the provided ClientId
+                if ($clientData['Permission'] === 'driver') {
+                    $errorMessage = "Error: Drivers cannot create orders.";
+                }
+            }
+        }
+
+        // Validate Address
+        if (empty($Address)) {
+            $addressError = "Error: Address cannot be empty.";
+        } elseif (preg_match('/[0-9]/', $Address)) {
+            $addressError = "Error: Address cannot contain numbers.";
+        }
 
         // Validate Price
         if (!is_numeric($Price) || $Price <= 0) {
             $priceError = "Error: Price must be a positive number.";
-        } else {
-            // Check the permission role of the provided ClientId
-            $clientRole = checkClientRole($ClientId);
+        }
 
-            if ($clientRole === 'driver') {
-                $errorMessage = "Error: Drivers cannot create orders.";
-            } else {
-                try {
-                    // Create order even if DriverId is null
-                    Admin::CreateOrder($ClientId, $Address, $DriverId, $Price);
-                    // Redirect after successful creation
-                    header('Location: ' . $_SERVER['PHP_SELF']);
-                    exit;
-                } catch (PDOException $e) {
-                    if ($e->getCode() == 23000) {
-                        $errorMessage = "Error: Client ID invalid. Please choose another.";
-                    } else {
-                        $errorMessage = "An unexpected error occurred: " . $e->getMessage();
-                    }
+        // If no errors, proceed with order creation
+        if (empty($clientIdError) && empty($addressError) && empty($priceError) && empty($errorMessage)) {
+            try {
+                // Create order even if DriverId is null
+                Admin::CreateOrder($ClientId, $Address, $DriverId, $Price);
+                // Redirect after successful creation
+                header('Location: ' . $_SERVER['PHP_SELF']);
+                exit;
+            } catch (PDOException $e) {
+                if ($e->getCode() == 23000) {
+                    $errorMessage = "Error: Client ID invalid. Please choose another.";
+                } else {
+                    $errorMessage = "An unexpected error occurred: " . $e->getMessage();
                 }
             }
         }
     }
 }
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -109,6 +144,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="../css/bootstrap.min.css" rel="stylesheet">
     <style>
+        /* Your existing CSS styles */
         #status-update-container {
             margin-left: 0%;
             width: 78em;
@@ -141,26 +177,24 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <h1 class="visually-hidden">Sidebars examples</h1>
 
     <div class="d-flex flex-column flex-shrink-0 p-3 text-white bg-dark" style="width: 250px;">
-    <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
-        <span style="margin-left: 51px;" class="fs-4">RINDRA</span>
+        <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
+            <span style="margin-left: 51px;" class="fs-4">RINDRA</span>
         </a>
-        <span style="margin-left: 20px;" class="fs-4" >FAST DELIVERY</span>
+        <span style="margin-left: 20px;" class="fs-4">FAST DELIVERY</span>
         <hr>
         <ul class="nav nav-pills flex-column mb-auto">
             <li>
                 <a style="font-size: 20px;" href="admin_dashboard.php" class="nav-link">
-                <svg class="bi me-2" width="16" height="16"><use xlink:href="#speedometer2"/></svg>
-                Dashboard</a>
+                <svg class="bi me-2" width="16" height="16"><use xlink:href="#speedometer2"/></svg>Dashboard</a>
             </li>
             <li>
                 <a style="font-size: 20px;" href="admin_trackorder.php" class="nav-link">
-                <svg class="bi me-2" width="16" height="16"><use xlink:href="#speedometer2"/></svg>
-                Track Orders</a>
+                <svg class="bi me-2" width="16" height="16"><use xlink:href="#speedometer2"/></svg>Track Orders</a>
             </li>
         </ul>
         <hr>
         <footer style="margin-left:1.5%">&copy; <?php echo date('Y'); ?> Rindra Fast Delivery</footer>
-        </div>
+    </div>
 
     <div class="b-example-divider"></div>
 
@@ -172,12 +206,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             </div>
             <div class="mb-3">
                 <input type="text" name="ClientId" class="form-control" placeholder="Client ID" required>
+                <?php if ($clientIdError): ?>
+                    <p style='color: red;'><?php echo $clientIdError; ?></p>
+                <?php endif; ?>
                 <?php if ($errorMessage): ?>
                     <p style='color: red;'><?php echo $errorMessage; ?></p>
                 <?php endif; ?>
             </div>
             <div class="mb-3">
                 <input type="text" name="Address" class="form-control" placeholder="Address" required>
+                <?php if ($addressError): ?>
+                    <p style='color: red;'><?php echo $addressError; ?></p>
+                <?php endif; ?>
             </div>
             <div class="mb-3">
                 <input type="text" name="Price" class="form-control" placeholder="Order Price" required>

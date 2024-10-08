@@ -3,6 +3,9 @@ session_start();
 require_once __DIR__ . '/../Classes/Client.php';
 use DELIVERY\Client\Client;
 
+$errorMessage = '';
+
+//
 // Ensure the client is logged in
 if (!isset($_SESSION['ID'])) {
     // Redirect to login page if not logged in
@@ -51,7 +54,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             }
         } else {
             // Error message if the order doesn't belong to the logged-in client
-            echo "<p style='color: red;'>Error: You can only track your own orders.</p>";
+            $errorMessage = "<p style='color: red;'>Error: Cannot identify this order ID.</p>";
         }
     }
 }
@@ -222,6 +225,9 @@ input[type="range"]::-moz-range-thumb {
         <button type="submit" class="d-flex btn btn-primary custom-width-button">Search</button>
         </form>
     </div>
+    <?php
+    echo $errorMessage;
+    ?>
 
     
     
