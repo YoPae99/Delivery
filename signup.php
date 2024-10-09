@@ -54,6 +54,15 @@
     <form id="form" action="/process_signup.php" method="post" enctype="multipart/form-data">
         <h1 style="text-align: center;" class="h3 mb-3 fw-normal">Sign up</h1>
 
+        <!-- CSRF Token -->
+        <input type="hidden" name="csrf_token" value="<?php
+        session_start(); // Start the session
+        if (!isset($_SESSION['csrf_token'])) {
+            $_SESSION['csrf_token'] = bin2hex(random_bytes(32)); // Generate a random token
+        }
+        echo $_SESSION['csrf_token']; // Output the token
+        ?>">
+        
         <!-- Name -->
         <div class="form-floating">
             <input type="text" class="form-control" id="floatingInput" placeholder="Name" name="name" required>

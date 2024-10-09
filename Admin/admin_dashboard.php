@@ -184,7 +184,7 @@ try {
               <div class="row justify-content-center mt-4">
 
                   <div class="col-auto">
-                      <a style="height: 120px; width:220px" href="display_allusers.php" class="btn btn-custom btn-secondary">
+                      <a style="height: 100px; width:220px" href="display_allusers.php" class="btn btn-custom btn-secondary">
                       <svg xmlns="http://www.w3.org/2000/svg" width="35" height="35" fill="currentColor" class="bi bi-person" viewBox="0 0 16 16">
                           <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6m2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0m4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4m-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10s-3.516.68-4.168 1.332c-.678.678-.83 1.418-.832 1.664z"/>
                       </svg>
@@ -193,7 +193,7 @@ try {
                   </div>
 
                   <div class="col-auto">
-                      <a style="height: 120px; width:220px" href="display_allorders.php" class="btn btn-custom btn-secondary">
+                      <a style="height: 100px; width:220px" href="display_allorders.php" class="btn btn-custom btn-secondary">
                       <svg xmlns="http://www.w3.org/2000/svg" width="35" height="35" fill="currentColor" class="bi bi-card-list" viewBox="0 0 16 16">
                           <path d="M14.5 3a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-.5.5h-13a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5zm-13-1A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2z"/>
                           <path d="M5 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 5 8m0-2.5a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5m0 5a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5m-1-5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0M4 8a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0m0 2.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0"/>
@@ -219,6 +219,17 @@ try {
                       <div class="fs-4 mb-3">Create Order</div>
                       </a>
                   </div>
+
+                  <div class="col-auto">
+                      <a href="admin_createuser.php" class="btn btn-outline-primary" style="height: 90px; width: 182px;">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="35" height="35" fill="currentColor" class="bi bi-person-add" viewBox="0 0 16 16">
+  <path d="M12.5 16a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7m.5-5v1h1a.5.5 0 0 1 0 1h-1v1a.5.5 0 0 1-1 0v-1h-1a.5.5 0 0 1 0-1h1v-1a.5.5 0 0 1 1 0m-2-6a3 3 0 1 1-6 0 3 3 0 0 1 6 0M8 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4"/>
+  <path d="M8.256 14a4.5 4.5 0 0 1-.229-1.004H3c.001-.246.154-.986.832-1.664C4.484 10.68 5.711 10 8 10q.39 0 .74.025c.226-.341.496-.65.804-.918Q8.844 9.002 8 9c-5 0-6 3-6 4s1 1 1 1z"/>
+</svg> 
+                      <div class="fs-4 mb-3">Create User</div>
+                      </a>
+                  </div>
+
                   <div class="col-auto">
                       <a href="admin_assignorder.php" class="btn btn-outline-primary" style="height: 90px; width: 180px;">
                       <svg xmlns="http://www.w3.org/2000/svg" width="35" height="35" fill="currentColor" class="bi bi-truck" viewBox="0 0 16 16">
@@ -227,6 +238,7 @@ try {
                       <div class="fs-4 mb-3">Assign Orders</div>
                       </a>
                   </div>
+                  
                   <div class="col-auto">
                       <a href="admin_updateorder.php" class="btn btn-outline-primary" style="height: 90px; width: 182px;">
                       <svg xmlns="http://www.w3.org/2000/svg" width="35" height="35" fill="currentColor" class="bi bi-journal-arrow-up" viewBox="0 0 16 16">
@@ -237,6 +249,7 @@ try {
                       <div class="fs-4 mb-3">Update Orders</div>
                       </a>
                   </div>
+                  
               </div>
           </div>
       </div>

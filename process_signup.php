@@ -1,12 +1,24 @@
 <?php
 // Include necessary files
 require_once __DIR__ . '/Classes/User.php';
+session_start(); // Start the session
 
 // Use correct namespaces
 use DELIVERY\User\User;
 
+// Generate CSRF token if not set
+if (!isset($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32)); // Generate a random token
+}
+
 // Check if the form is submitted
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    // Validate CSRF token
+    if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+        echo "Invalid CSRF token.";
+        exit;
+    }
+
     // Retrieve form data
     $name = $_POST['name'];
     $permission = $_POST['permission'];

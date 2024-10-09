@@ -45,12 +45,17 @@ function fetchOrdersFromDatabase() {
     $conn = $db->getStarted();
     $orders = [];
     if ($conn) {
-        $stmt = $conn->prepare("SELECT o.ClientId, o.OrderId, o.Address, o.Price, o.OrderDate, u.Name AS DriverName FROM orders o LEFT JOIN user u ON o.DriverId = u.ID");
+        // Update this SQL statement to order by OrderDate in descending order
+        $stmt = $conn->prepare("SELECT o.ClientId, o.OrderId, o.Address, o.Price, o.OrderDate, u.Name AS DriverName 
+                                 FROM orders o 
+                                 LEFT JOIN user u ON o.DriverId = u.ID 
+                                 ORDER BY o.OrderDate DESC"); // Added ORDER BY clause
         $stmt->execute();
         $orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
     return $orders;
 }
+
 
 // Function to check if ClientId exists in the database and fetch its role
 function checkClientIdExists($clientId) {
@@ -234,11 +239,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 </select>
             </div>
             <div>
-                <button type="submit" class="btn btn-primary mt-2">Submit</button>
+                <button type="submit" class="btn btn-primary mt-2">Order</button>
             </div>
         </form>
 
         <br>
+        <h3 style="font-size: 20px">Recent Orders</h3>
+
         <hr>
         <div class="custom-card">
             <table class="table table-secondary table-bordered custom-table">
@@ -250,7 +257,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         <th scope="col">Price</th>
                         <th scope="col">Order Date</th>
                         <th scope="col">Assigned Driver</th>
-                        <th scope="col">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -263,12 +269,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                 <td><?php echo $entry['Price']; ?></td>
                                 <td><?php echo $entry['OrderDate']; ?></td>
                                 <td><?php echo $entry['DriverName'] ?: 'None'; ?></td>
-                                <td>
-                                    <form action="" method="post">
-                                        <input type="hidden" name="OrderId" value="<?php echo $entry['OrderId']; ?>">
-                                        <button style="width: 100%;" type="submit" name="delete" class="btn btn-danger">Delete</button>
-                                    </form>
-                                </td>
+                                
                             </tr>
                         <?php endforeach; ?>
                     <?php endif; ?>

@@ -14,7 +14,6 @@ use DELIVERY\Database\Database;
 use PDO;
 use PDOException;
 class Driver extends User{
-    public static function Login($Email, $Password ){}
     public function UpdateOrderStatus($OrderID, $Status) {
         $conn = new Database();
         try {

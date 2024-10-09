@@ -21,10 +21,10 @@ function fetchOrdersFromDatabase($status = null, $clientName = null, $limit = 5,
 
         // Add condition based on status
         if ($status) {
-            if ($status === 'Ongoing') {
-                $query = $baseQuery . " WHERE orders.Status IN ('Order Received', 'Order Ready', 'Picked up', 'Pending')";
-            } elseif ($status === 'New Order') {
-                $query = $baseQuery . " WHERE orders.Status IS NULL OR orders.Status = ''";
+            // Handle multiple statuses
+            if (is_array($status)) {
+                $statusPlaceholders = implode(',', array_fill(0, count($status), '?')); // Create placeholders for the IN clause
+                $query = $baseQuery . " WHERE orders.Status IN ($statusPlaceholders)";
             } else {
                 $query = $baseQuery . " WHERE orders.Status = :status";
             }
@@ -42,10 +42,15 @@ function fetchOrdersFromDatabase($status = null, $clientName = null, $limit = 5,
 
         $stmt = $conn->prepare($query);
 
-        // Bind parameters if necessary
-        if ($status && $status !== 'Ongoing' && $status !== 'New Order') {
+        // Bind parameters
+        if (is_array($status)) {
+            foreach ($status as $index => $stat) {
+                $stmt->bindValue($index + 1, $stat); // Bind each status parameter
+            }
+        } elseif ($status) {
             $stmt->bindParam(':status', $status);
         }
+
         if ($clientName) {
             $clientNameParam = '%' . $clientName . '%';
             $stmt->bindParam(':clientName', $clientNameParam);
@@ -61,6 +66,7 @@ function fetchOrdersFromDatabase($status = null, $clientName = null, $limit = 5,
 
     return $orders;
 }
+
 
 // Function to fetch total number of orders for pagination
 function fetchTotalOrdersCount($status = null, $clientName = null) {
@@ -125,6 +131,22 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $stmt->bindParam(':orderId', $orderIdToDelete);
             $stmt->execute();
         }
+        if (isset($_POST['Select'])) {
+            $selectedStatus = $_POST['Select'];
+        
+            if ($selectedStatus == 'Proceeded') {
+                $orders = fetchOrdersFromDatabase(['Delivered'], null, $limit, $offset); // Changed to array
+            } elseif ($selectedStatus == 'Ongoing') {
+                $orders = fetchOrdersFromDatabase(['Pending', 'Order Received', 'Picked up', 'Pending'], null, $limit, $offset); // Changed to array
+            } elseif ($selectedStatus == 'New Order') {
+                $orders = fetchOrdersFromDatabase(['New Order'], null, $limit, $offset);
+            } elseif ($selectedStatus == 'Canceled') {
+                $orders = fetchOrdersFromDatabase(['Canceled'], null, $limit, $offset);
+            } else {
+                $orders = fetchOrdersFromDatabase(null, null, $limit, $offset); // Fetch all orders if 'All' is selected
+            }
+        }
+        
 
         // Optionally, refresh order list
         header('Location: ' . $_SERVER['PHP_SELF']);
@@ -136,18 +158,20 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 if (isset($_POST['Select'])) {
     $selectedStatus = $_POST['Select'];
 
-    if ($selectedStatus == 'Proceeded') {
-        $orders = fetchOrdersFromDatabase('Delivered', null, $limit, $offset); // Assuming 'Delivered' as proceeded
-    } elseif ($selectedStatus == 'Ongoing') {
-        $orders = fetchOrdersFromDatabase('Ongoing', null, $limit, $offset); // Fetch ongoing orders with multiple statuses
+    if ($selectedStatus == 'Order Received' || 
+        $selectedStatus == 'Order Ready' || 
+        $selectedStatus == 'Picked up' || 
+        $selectedStatus == 'Pending' || 
+        $selectedStatus == 'Delivered' || 
+        $selectedStatus == 'Canceled') {
+        $orders = fetchOrdersFromDatabase($selectedStatus, null, $limit, $offset);
     } elseif ($selectedStatus == 'New Order') {
         $orders = fetchOrdersFromDatabase('New Order', null, $limit, $offset); // Fetch orders with null or blank status
-    } elseif ($selectedStatus == 'Canceled') {
-        $orders = fetchOrdersFromDatabase('Canceled', null, $limit, $offset); // Fetch orders with canceled status
     } else {
         $orders = fetchOrdersFromDatabase(null, null, $limit, $offset); // Fetch all orders if 'All' is selected
     }
 }
+
 
 // Handle search by client name
 if (isset($_POST['ClientName'])) {
@@ -251,13 +275,16 @@ if (isset($_POST['ClientName'])) {
         <div class="d-flex" style="margin-left:40%">
             <form method="post" action="" class="d-flex">
                 
-                <select class="form-select form-select-sm me-2 custom-width-select" name="Select" aria-label="Small select example">
-                    <option value="All" selected>All</option>
-                    <option value="New Order">New Order</option>
-                    <option value="Ongoing">On Going</option>
-                    <option value="Proceeded">Completed</option>
-                    <option value="Canceled">Canceled</option>
-                </select>
+            <select class="form-select form-select-sm me-2 custom-width-select" name="Select" aria-label="Small select example">
+    <option value="All" selected>All</option>
+    <option value="Order Received">Order Received</option>
+    <option value="Order Ready">Order Ready</option>
+    <option value="Picked up">Picked up</option>
+    <option value="Pending">Pending</option>
+    <option value="Delivered">Delivered</option>
+    <option value="Canceled">Canceled</option>
+</select>
+
                 <button style="width: 107px;" type="submit" class="btn btn-primary  custom-width-button">Filter</button>
                 <!-- Search Bar -->
                 

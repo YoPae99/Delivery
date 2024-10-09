@@ -30,7 +30,9 @@ function fetchOrderById($conn, $orderId) {
         SELECT 
             o.OrderId, 
             o.Address, 
-            u.Email 
+            u.Email,
+            o.Status, 
+            o.ClientId  -- Fetch the ClientId for email update
         FROM 
             orders o 
         LEFT JOIN 
@@ -74,25 +76,52 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submitAll'])) {
 
     if ($OrderId) {
         try {
-            // Check if DriverId is 'N/A'
-            $driverIdToUpdate = ($DriverId === 'N/A') ? null : $DriverId;
-
-            $stmt = $conn->prepare("UPDATE orders SET DriverId = :driverId, Address = :address WHERE OrderId = :orderId");
-            $stmt->bindParam(':driverId', $driverIdToUpdate);
-            $stmt->bindParam(':address', $Address);
+            // Fetch the current status of the order
+            $stmt = $conn->prepare("SELECT Status, DriverId FROM orders WHERE OrderId = :orderId");
             $stmt->bindParam(':orderId', $OrderId);
             $stmt->execute();
+            $orderData = $stmt->fetch(PDO::FETCH_ASSOC);
+            $orderStatus = $orderData['Status'];
+            $currentDriverId = $orderData['DriverId'];
+
+            // Prepare the SQL update statement
+            $sql = "UPDATE orders SET Address = :address"; // Start with address
+            $params = [':address' => $Address]; // Parameters array
+
+            // Check if a new driver is selected
+            if (!empty($DriverId) && $DriverId !== $currentDriverId) {
+                // Only update DriverId if the status allows it
+                if (!in_array($orderStatus, ['Picked up', 'Pending', 'Delivered'])) {
+                    // Update driver
+                    $driverIdToUpdate = ($DriverId === 'N/A') ? null : $DriverId;
+                    $sql .= ", DriverId = :driverId"; // Add driver update to the SQL statement
+                    $params[':driverId'] = $driverIdToUpdate; // Add driver parameter
+                } else {
+                    // Inform the user that the driver cannot be reassigned
+                    echo '<div class="alert alert-danger" role="alert">Warning: The order status is ' . htmlspecialchars($orderStatus) . '. Driver cannot be changed.</div>';
+                }
+            }
+
+            $sql .= " WHERE OrderId = :orderId"; // Add where clause for the OrderId
+            $params[':orderId'] = $OrderId; // Add order ID parameter
+
+            // Prepare and execute the update statement
+            $stmt = $conn->prepare($sql);
+            $stmt->execute($params);
 
             // Redirect after successful submission
-            header('Location: display_allorders.php');
-            exit;
+            // header('Location: display_allorders.php');
+            // exit;
         } catch (PDOException $e) {
-            echo "<p style='color: red;'>An unexpected error occurred: " . $e->getMessage() . "</p>";
+            // Handle any errors here
+            $errors[] = "Failed to update order: " . $e->getMessage();
         }
     } else {
         echo "<p style='color: red;'>Error: Order ID is required.</p>";
     }
 }
+
+
 
 $availableDrivers = fetchAvailableDrivers($conn);
 ?>
@@ -110,35 +139,40 @@ $availableDrivers = fetchAvailableDrivers($conn);
     <h3>Modify Orders</h3>
     
     <?php if ($order): ?>
-        <form method="post" action="">
-            <input type="hidden" name="OrderId" value="<?php echo $order['OrderId']; ?>">
-            
-            <div class="mb-3">
-                <label for="email" class="form-label">Client Email</label>
-                <input type="email" class="form-control" id="email" value="<?php echo $order['Email']; ?>" readonly>
-            </div>
+    <form method="post" action="">
+        <input type="hidden" name="OrderId" value="<?php echo $order['OrderId']; ?>">
+        
+        <div class="mb-3">
+            <label for="email" class="form-label">Client Email</label>
+            <input type="email" class="form-control" id="email" name="Email" value="<?php echo isset($order['Email']) ? htmlspecialchars($order['Email']) : ''; ?>" required>
+        </div>
 
-            <div class="mb-3">
-                <label for="address" class="form-label">Address</label>
-                <input type="text" class="form-control" id="address" name="Address" value="<?php echo $order['Address']; ?>" required>
-            </div>
+        <div class="mb-3">
+            <label for="address" class="form-label">Address</label>
+            <input type="text" class="form-control" id="address" name="Address" value="<?php echo isset($order['Address']) ? htmlspecialchars($order['Address']) : ''; ?>" required>
+        </div>
 
-            <div class="mb-3">
-                <label for="driver" class="form-label">Assign Driver</label>
-                <select name="DriverId" class="form-select" required>
-                    <option value="N/A" selected>N/A</option>
-                    <?php foreach ($availableDrivers as $driver): ?>
-                        <option value="<?php echo $driver['DriverID']; ?>"><?php echo $driver['DriverName']; ?></option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
-            
-            <button type="submit" name="submitAll" class="btn btn-primary">Submit</button>
-            <a href="display_allorders.php" class="btn btn-secondary">Go Back</a>
-        </form>
+        <div class="mb-3">
+    <label for="driver" class="form-label">Reassign Driver</label>
+    <select name="DriverId" class="form-select">
+        <option value="">Select a Driver</option>
+        <?php foreach ($availableDrivers as $driver): ?>
+            <option value="<?php echo htmlspecialchars($driver['DriverID']); ?>" 
+                <?php echo (isset($order['DriverId']) && $driver['DriverID'] == $order['DriverId']) ? 'selected' : ''; ?>> 
+                <?php echo htmlspecialchars($driver['DriverName']); ?>
+            </option>
+        <?php endforeach; ?>
+    </select>
+</div>
+
+        
+        <button type="submit" name="submitAll" class="btn btn-primary">Submit</button>
+        <a href="display_allorders.php" class="btn btn-secondary">Go Back</a>
+    </form>
     <?php else: ?>
         <p>No order found for modification.</p>
     <?php endif; ?>
+
 </main>
 </body>
 </html>

@@ -22,13 +22,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['UserId'])) {
 
     // Check if the form is submitted to update the user details
     if (isset($_POST['update'])) {
-        $name = $_POST['Name'];
-        $age = $_POST['Age'];
-        $username = $_POST['Username'];
+        // Trim inputs
+        $name = trim($_POST['Name']);
+        $age = trim($_POST['Age']);
+        $username = trim($_POST['Username']);
 
         // Server-side validation
-        if (!preg_match('/^[A-Z][a-zA-Z]*$/', $name)) {
-            $errors[] = "Name must start with a capital letter and contain only letters.";
+        if (!preg_match('/^[A-Z][a-zA-Z\s]*$/', $name)) {
+            $errors[] = "Name must start with a capital letter and contain only letters and spaces.";
         }
         if (!is_numeric($age) || $age < 18) {
             $errors[] = "Age must be a number greater than 18.";
@@ -51,6 +52,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['UserId'])) {
             }
         }
     }
+
+
 } else {
     header('Location: display_alluser.php'); // Redirect if no user ID is provided
     exit;
@@ -66,35 +69,36 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['UserId'])) {
     <title>Modify User</title>
     <script>
         function validateForm() {
-            let name = document.forms["updateForm"]["Name"].value;
-            let age = document.forms["updateForm"]["Age"].value;
-            let username = document.forms["updateForm"]["Username"].value;
-            let errors = [];
+    let name = document.forms["updateForm"]["Name"].value.trim(); // Trim spaces
+    let age = document.forms["updateForm"]["Age"].value;
+    let username = document.forms["updateForm"]["Username"].value;
+    let errors = [];
 
-            // Name validation
-            let nameRegex = /^[A-Z][a-zA-Z]*$/;
-            if (!nameRegex.test(name)) {
-                errors.push("Name must start with a capital letter and contain only letters.");
-            }
+    // Name validation
+    let nameRegex = /^[A-Z][a-zA-Z\s]*$/;
+    if (!nameRegex.test(name)) {
+        errors.push("Name must start with a capital letter and contain only letters and spaces.");
+    }
 
-            // Age validation
-            if (age < 18 || isNaN(age)) {
-                errors.push("Age must be a number greater than 18.");
-            }
+    // Age validation
+    if (age < 18 || isNaN(age)) {
+        errors.push("Age must be a number greater than 18.");
+    }
 
-            // Username validation
-            let usernameRegex = /[a-zA-Z]/;
-            if (!usernameRegex.test(username) || !isNaN(username)) {
-                errors.push("Username must contain letters and cannot be only numbers.");
-            }
+    // Username validation
+    let usernameRegex = /[a-zA-Z]/;
+    if (!usernameRegex.test(username) || !isNaN(username)) {
+        errors.push("Username must contain letters and cannot be only numbers.");
+    }
 
-            // Display errors or submit the form
-            if (errors.length > 0) {
-                alert(errors.join("\n"));
-                return false;
-            }
-            return true;
-        }
+    // Display errors or submit the form
+    if (errors.length > 0) {
+        alert(errors.join("\n"));
+        return false;
+    }
+    return true;
+}
+
     </script>
 </head>
 <body>
@@ -102,18 +106,20 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['UserId'])) {
         <h2>Modify User</h2>
 
         <?php if (!empty($errors)): ?>
-            <div class="alert alert-danger">
-                <?php foreach ($errors as $error): ?>
-                    <p><?php echo $error; ?></p>
-                <?php endforeach; ?>
-            </div>
-        <?php endif; ?>
+    <pre><?php print_r($errors); ?></pre>  <!-- This will show the entire errors array -->
+    <div class="alert alert-danger">
+        <?php foreach ($errors as $error): ?>
+            <p><?php echo $error; ?></p>
+        <?php endforeach; ?>
+    </div>
+<?php endif; ?>
 
-        <?php if ($successMessage): ?>
-            <div class="alert alert-success">
-                <p><?php echo $successMessage; ?></p>
-            </div>
-        <?php endif; ?>
+<?php if ($successMessage): ?>
+    <div class="alert alert-success">
+        <p><?php echo $successMessage; ?></p>
+    </div>
+<?php endif; ?>
+
 
         <form name="updateForm" method="post" action="" onsubmit="return validateForm()">
             <input type="hidden" name="UserId" value="<?php echo htmlspecialchars($userId); ?>">

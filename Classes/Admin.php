@@ -8,9 +8,6 @@ use PDO;
 use PDOException;
 
 class Admin extends User {
-    public static function Login($Email, $Password) {
-        // Implementation here
-    }
 
     public static function CreateOrder($ClientId, $Address, $DriverId, $Price) {
         $db = new \DELIVERY\Database\Database();
